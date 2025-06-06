@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-
 import { Badge } from "@/components/ui/badge";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
