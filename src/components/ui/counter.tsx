@@ -26,8 +26,11 @@ export const Counter = ({
 
     let startTime: number;
     let animationFrame: number;
+    let isMounted = true;
 
     const animate = (timestamp: number) => {
+      if (!isMounted) return;
+
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
 
@@ -35,7 +38,7 @@ export const Counter = ({
       const easeOutCubic = 1 - Math.pow(1 - progress, 3);
       setCount(Math.floor(end * easeOutCubic));
 
-      if (progress < 1) {
+      if (progress < 1 && isMounted) {
         animationFrame = requestAnimationFrame(animate);
       }
     };
@@ -43,6 +46,7 @@ export const Counter = ({
     animationFrame = requestAnimationFrame(animate);
 
     return () => {
+      isMounted = false;
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
       }
