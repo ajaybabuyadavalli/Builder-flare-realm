@@ -102,7 +102,7 @@ const Login = () => {
     setIsLoading(true);
 
     // Simulate API call
-    setTimeout(() => {
+    const loginTimeout = setTimeout(() => {
       const role = roles.find((r) => r.id === selectedRole);
       const isValidCredentials =
         formData.email === role?.demoCredentials.email &&
@@ -116,9 +116,12 @@ const Login = () => {
           description: "Redirecting to your dashboard...",
         });
 
-        setTimeout(() => {
+        const redirectTimeout = setTimeout(() => {
           navigate(role.redirectTo);
         }, 1500);
+
+        // Cleanup on unmount
+        return () => clearTimeout(redirectTimeout);
       } else {
         toast({
           title: "Invalid credentials ❌",
@@ -127,6 +130,9 @@ const Login = () => {
         });
       }
     }, 2000);
+
+    // Cleanup function
+    return () => clearTimeout(loginTimeout);
   };
 
   const fillDemoCredentials = () => {
