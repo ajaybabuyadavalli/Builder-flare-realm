@@ -23,6 +23,9 @@ import {
 import { Link } from "react-router-dom";
 
 const Testimonials = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRole, setSelectedRole] = useState("all");
+
   const creatorTestimonials = [
     {
       name: "Ajay Kumar",
