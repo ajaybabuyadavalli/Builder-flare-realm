@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Badge } from "@/components/ui/badge";
-import { Search, Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -11,13 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
@@ -46,29 +40,6 @@ export const Navbar = () => {
               </div>
               <span className="font-bold text-xl">Influbazzar</span>
             </Link>
-          </div>
-
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search creators, brands, campaigns..."
-                className="pl-10"
-              />
-            </div>
-            <Select>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beauty">Beauty</SelectItem>
-                <SelectItem value="fashion">Fashion</SelectItem>
-                <SelectItem value="fitness">Fitness</SelectItem>
-                <SelectItem value="food">Food</SelectItem>
-                <SelectItem value="tech">Tech</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Desktop Navigation */}
@@ -147,14 +118,6 @@ export const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="space-y-4">
-              {/* Mobile Search */}
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input placeholder="Search..." className="pl-10" />
-                </div>
-              </div>
-
               {/* Mobile Navigation */}
               {navigation.map((item) => (
                 <Link
