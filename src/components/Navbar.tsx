@@ -88,10 +88,10 @@ export const Navbar = () => {
                     <Link to="/signup?role=creator">Join as Creator</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/signup?role=brand">Post Campaign</Link>
+                    <Link to="/signup?role=brand">Start as Brand</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/signup?role=agency">Agency Login</Link>
+                    <Link to="/signup?role=agency">Join as Agency</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
