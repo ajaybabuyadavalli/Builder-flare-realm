@@ -274,7 +274,7 @@ const Testimonials = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {creatorTestimonials.map((testimonial, index) => (
+            {filteredCreatorTestimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -388,7 +388,7 @@ const Testimonials = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {brandTestimonials.map((testimonial, index) => (
+            {filteredBrandTestimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.company}
                 initial={{ opacity: 0, y: 20 }}
@@ -489,115 +489,119 @@ const Testimonials = () => {
       </section>
 
       {/* Agency Testimonial */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-600">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-8">
-                <div className="text-center mb-8">
-                  <div className="flex items-center justify-center mb-4">
-                    <BarChart3 className="w-8 h-8 mr-3" />
-                    <h2 className="text-3xl md:text-4xl font-bold">
-                      Agency Success Story
-                    </h2>
-                  </div>
-                  <p className="text-xl opacity-90">
-                    Scaling operations with Influbazzar
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <div className="flex items-center mb-6">
-                      <Avatar className="w-16 h-16 mr-4">
-                        <AvatarImage
-                          src={agencyTestimonial.avatar}
-                          alt={agencyTestimonial.name}
-                        />
-                        <AvatarFallback>
-                          {agencyTestimonial.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-bold text-xl">
-                          {agencyTestimonial.name}
-                        </h3>
-                        <p className="opacity-90">{agencyTestimonial.role}</p>
-                        <p className="text-sm opacity-75">
-                          {agencyTestimonial.company}
-                        </p>
-                      </div>
+      {shouldShowAgency && (
+        <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-600">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
+                <CardContent className="p-8">
+                  <div className="text-center mb-8">
+                    <div className="flex items-center justify-center mb-4">
+                      <BarChart3 className="w-8 h-8 mr-3" />
+                      <h2 className="text-3xl md:text-4xl font-bold">
+                        Agency Success Story
+                      </h2>
                     </div>
-
-                    <div className="relative mb-6">
-                      <Quote className="absolute -top-2 -left-2 w-8 h-8 opacity-30" />
-                      <p className="text-lg italic pl-8 opacity-90">
-                        "{agencyTestimonial.quote}"
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="bg-white/10 rounded-lg p-4">
-                        <h4 className="font-semibold mb-2">
-                          Before Influbazzar:
-                        </h4>
-                        <p className="text-sm opacity-90">
-                          {agencyTestimonial.beforeAfter.before}
-                        </p>
-                      </div>
-                      <div className="bg-white/10 rounded-lg p-4">
-                        <h4 className="font-semibold mb-2">
-                          After Influbazzar:
-                        </h4>
-                        <p className="text-sm opacity-90">
-                          {agencyTestimonial.beforeAfter.after}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-xl opacity-90">
+                      Scaling operations with Influbazzar
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="text-center bg-white/10 rounded-lg p-6">
-                      <div className="text-3xl font-bold mb-2">
-                        {agencyTestimonial.metrics.creatorsManaged}+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                      <div className="flex items-center mb-6">
+                        <Avatar className="w-16 h-16 mr-4">
+                          <AvatarImage
+                            src={agencyTestimonial.avatar}
+                            alt={agencyTestimonial.name}
+                          />
+                          <AvatarFallback>
+                            {agencyTestimonial.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-bold text-xl">
+                            {agencyTestimonial.name}
+                          </h3>
+                          <p className="opacity-90">{agencyTestimonial.role}</p>
+                          <p className="text-sm opacity-75">
+                            {agencyTestimonial.company}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-sm opacity-90">Creators Managed</div>
+
+                      <div className="relative mb-6">
+                        <Quote className="absolute -top-2 -left-2 w-8 h-8 opacity-30" />
+                        <p className="text-lg italic pl-8 opacity-90">
+                          "{agencyTestimonial.quote}"
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="bg-white/10 rounded-lg p-4">
+                          <h4 className="font-semibold mb-2">
+                            Before Influbazzar:
+                          </h4>
+                          <p className="text-sm opacity-90">
+                            {agencyTestimonial.beforeAfter.before}
+                          </p>
+                        </div>
+                        <div className="bg-white/10 rounded-lg p-4">
+                          <h4 className="font-semibold mb-2">
+                            After Influbazzar:
+                          </h4>
+                          <p className="text-sm opacity-90">
+                            {agencyTestimonial.beforeAfter.after}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-center bg-white/10 rounded-lg p-6">
-                      <div className="text-3xl font-bold mb-2">
-                        {agencyTestimonial.metrics.campaigns}+
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="text-center bg-white/10 rounded-lg p-6">
+                        <div className="text-3xl font-bold mb-2">
+                          {agencyTestimonial.metrics.creatorsManaged}+
+                        </div>
+                        <div className="text-sm opacity-90">
+                          Creators Managed
+                        </div>
                       </div>
-                      <div className="text-sm opacity-90">Campaigns Run</div>
-                    </div>
-                    <div className="text-center bg-white/10 rounded-lg p-6">
-                      <div className="text-3xl font-bold mb-2">
-                        {agencyTestimonial.metrics.timeReduction}
+                      <div className="text-center bg-white/10 rounded-lg p-6">
+                        <div className="text-3xl font-bold mb-2">
+                          {agencyTestimonial.metrics.campaigns}+
+                        </div>
+                        <div className="text-sm opacity-90">Campaigns Run</div>
                       </div>
-                      <div className="text-sm opacity-90">Time Reduction</div>
-                    </div>
-                    <div className="text-center bg-white/10 rounded-lg p-6">
-                      <div className="text-3xl font-bold mb-2">
-                        {agencyTestimonial.metrics.clientSatisfaction}
+                      <div className="text-center bg-white/10 rounded-lg p-6">
+                        <div className="text-3xl font-bold mb-2">
+                          {agencyTestimonial.metrics.timeReduction}
+                        </div>
+                        <div className="text-sm opacity-90">Time Reduction</div>
                       </div>
-                      <div className="text-sm opacity-90">
-                        Client Satisfaction
+                      <div className="text-center bg-white/10 rounded-lg p-6">
+                        <div className="text-3xl font-bold mb-2">
+                          {agencyTestimonial.metrics.clientSatisfaction}
+                        </div>
+                        <div className="text-sm opacity-90">
+                          Client Satisfaction
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 bg-muted/50">
