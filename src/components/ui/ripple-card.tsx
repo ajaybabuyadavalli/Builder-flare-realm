@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +8,7 @@ interface RippleCardProps {
   rippleColor?: string;
 }
 
-export const RippleCard = ({
+export const RippleCard = memo(({ children, className, rippleColor = "rgba(255, 255, 255, 0.6)" }: RippleCardProps) => {
   children,
   className,
   rippleColor = "rgba(255, 255, 255, 0.6)",
@@ -17,19 +17,22 @@ export const RippleCard = ({
     Array<{ x: number; y: number; id: number }>
   >([]);
 
-  const createRipple = (event: React.MouseEvent<HTMLDivElement>) => {
+  const createRipple = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const id = Date.now();
 
-    setRipples((prev) => [...prev, { x, y, id }]);
+    setRipples(prev => [...prev, { x, y, id }]);
 
     // Remove ripple after animation
-    setTimeout(() => {
-      setRipples((prev) => prev.filter((ripple) => ripple.id !== id));
+    const timeout = setTimeout(() => {
+      setRipples(prev => prev.filter(ripple => ripple.id !== id));
     }, 600);
-  };
+
+    // Cleanup
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <motion.div
@@ -58,4 +61,4 @@ export const RippleCard = ({
       ))}
     </motion.div>
   );
-};
+});
