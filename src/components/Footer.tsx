@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Instagram, Linkedin, Twitter, Mail, Phone } from "lucide-react";
 
-export const Footer = () => {
+export const Footer = memo(() => {
   const footerSections = [
     {
       title: "Platform",
@@ -122,7 +123,7 @@ export const Footer = () => {
               </Button>
               <span className="text-muted-foreground">|</span>
               <Button variant="ghost" size="sm">
-                हिं
+                ������ं
               </Button>
             </div>
 
@@ -173,4 +174,4 @@ export const Footer = () => {
       </div>
     </footer>
   );
-};
+});
