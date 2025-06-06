@@ -278,6 +278,8 @@ const CaseStudies = () => {
 
   const featuredCaseStudies = caseStudies.filter((study) => study.featured);
 
+  const featuredCaseStudies = caseStudies.filter((study) => study.featured);
+
   const filteredCaseStudies = caseStudies.filter((study) => {
     const matchesSearch =
       searchTerm === "" ||
