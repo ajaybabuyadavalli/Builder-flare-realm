@@ -262,22 +262,6 @@ const CaseStudies = () => {
     },
   ];
 
-  const filteredCaseStudies = caseStudies.filter((study) => {
-    const matchesSearch =
-      study.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      study.hashtag.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      study.brand.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || study.category === selectedCategory;
-    const matchesInfluencerType =
-      selectedInfluencerType === "all" ||
-      study.influencerType === selectedInfluencerType;
-
-    return matchesSearch && matchesCategory && matchesInfluencerType;
-  });
-
-  const featuredCaseStudies = caseStudies.filter((study) => study.featured);
-
   const featuredCaseStudies = caseStudies.filter((study) => study.featured);
 
   const filteredCaseStudies = caseStudies.filter((study) => {
