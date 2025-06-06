@@ -18,6 +18,10 @@ import CreatorSignup from "./pages/creator/Signup";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import DiscoverCampaigns from "./pages/creator/DiscoverCampaigns";
 import MyCampaigns from "./pages/creator/MyCampaigns";
+import CreatorProfile from "./pages/creator/Profile";
+import CreatorEarnings from "./pages/creator/Earnings";
+import CreatorAnalytics from "./pages/creator/Analytics";
+import CreatorSupport from "./pages/creator/Support";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +54,10 @@ const App = () => (
               element={<DiscoverCampaigns />}
             />
             <Route path="/creator/my-campaigns" element={<MyCampaigns />} />
-
+            <Route path="/creator/profile" element={<CreatorProfile />} />
+            <Route path="/creator/earnings" element={<CreatorEarnings />} />
+            <Route path="/creator/analytics" element={<CreatorAnalytics />} />
+            <Route path="/creator/support" element={<CreatorSupport />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
