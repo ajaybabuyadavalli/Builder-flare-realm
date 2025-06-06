@@ -287,18 +287,17 @@ const HowItWorksSection = () => {
               className="flex items-center space-x-2"
             >
               <Users className="w-4 h-4" />
-              <span>Ajay (Creator)</span>
+              <span>Creator</span>
             </TabsTrigger>
             <TabsTrigger value="brand" className="flex items-center space-x-2">
               <Target className="w-4 h-4" />
-              <span>Srinivas (Brand)</span>
+              <span>Brand</span>
             </TabsTrigger>
             <TabsTrigger value="agency" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
-              <span>Yoshitha (Agency)</span>
+              <span>Agency</span>
             </TabsTrigger>
           </TabsList>
-
           {Object.entries(workflows).map(([role, steps]) => (
             <TabsContent key={role} value={role} className="mt-8">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
