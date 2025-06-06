@@ -201,6 +201,39 @@ const Testimonials = () => {
         </div>
       </section>
 
+      {/* Search and Filter */}
+      <section className="py-8 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-4 items-center justify-center"
+          >
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search testimonials..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="px-4 py-2 border border-border rounded-md bg-background"
+            >
+              <option value="all">All Roles</option>
+              <option value="creator">Creators</option>
+              <option value="brand">Brands</option>
+              <option value="agency">Agencies</option>
+            </select>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Success Metrics */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
