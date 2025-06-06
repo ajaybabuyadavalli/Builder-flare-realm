@@ -278,6 +278,26 @@ const CaseStudies = () => {
 
   const featuredCaseStudies = caseStudies.filter((study) => study.featured);
 
+  const filteredCaseStudies = caseStudies.filter((study) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      study.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      study.hashtag.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      study.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      study.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      study.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      study.keyLearnings.some((learning) =>
+        learning.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    const matchesCategory =
+      selectedCategory === "all" || study.category === selectedCategory;
+    const matchesInfluencerType =
+      selectedInfluencerType === "all" ||
+      study.influencerType === selectedInfluencerType;
+
+    return matchesSearch && matchesCategory && matchesInfluencerType;
+  });
+
   return (
     <div className="min-h-screen">
       <Navbar />
