@@ -1,713 +1,729 @@
-import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+/**
+ * MyCampaigns.jsx
+ *
+ * Purpose: Campaign management dashboard with tabs, table view, and detailed campaign tracking
+ *
+ * Features:
+ * - Tabbed interface (Applied, Approved, Submitted, Paid)
+ * - Table view with expandable campaign details
+ * - Search and filter functionality
+ * - Status-based color coding
+ * - Campaign brief and deliverables accordion
+ * - Content upload functionality
+ * - Analytics view for completed campaigns
+ *
+ * Backend Integration:
+ * - Campaign status updates
+ * - Content upload API
+ * - Campaign analytics data
+ * - Messaging system with brands
+ */
+
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
 const MyCampaigns = () => {
-  const [activeTab, setActiveTab] = useState("active");
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("applied");
+  const [campaigns, setCampaigns] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState({
+    platform: "all",
+    brand: "all",
+    dateRange: "all",
+  });
+  const [expandedCampaign, setExpandedCampaign] = useState(null);
+  const [uploadingContent, setUploadingContent] = useState(null);
 
-  const campaigns = {
-    active: [
+  // Sample campaigns data
+  useEffect(() => {
+    const sampleCampaigns = [
       {
         id: 1,
+        title: "Summer Fashion Collection Launch",
         brand: "StyleCo",
-        title: "Summer Collection Showcase",
-        status: "In Progress",
-        progress: 65,
-        deadline: "2024-02-15",
-        payment: "₹15,000",
-        description: "Create authentic styling content for summer collection",
+        status: "approved",
+        platform: "Instagram",
+        payment: 25000,
+        appliedDate: "2024-01-15",
+        deadline: "2024-02-20",
+        progress: 75,
+        brief:
+          "Create authentic content showcasing our summer collection with natural lighting and lifestyle shots.",
         deliverables: [
           {
-            task: "Instagram Posts (3)",
-            completed: 2,
-            total: 3,
-            status: "in-progress",
-          },
-          {
-            task: "Instagram Stories (5)",
-            completed: 5,
-            total: 5,
+            type: "Instagram Post",
             status: "completed",
+            uploadDate: "2024-01-20",
           },
           {
-            task: "TikTok Video (1)",
-            completed: 0,
-            total: 1,
-            status: "pending",
+            type: "Instagram Stories (3)",
+            status: "completed",
+            uploadDate: "2024-01-21",
           },
+          { type: "Instagram Reel", status: "pending", uploadDate: null },
         ],
-        brandImage:
-          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&h=100&fit=crop",
-        lastUpdate: "2 hours ago",
-        messages: 3,
-        priority: "High",
+        requirements: [
+          "Minimum 50K followers",
+          "Fashion/Lifestyle niche",
+          "High engagement rate",
+        ],
+        analytics: {
+          reach: 125000,
+          engagement: 8750,
+          clicks: 1250,
+          saves: 890,
+        },
       },
       {
         id: 2,
-        brand: "TechFlow",
-        title: "App Review Campaign",
-        status: "Review Pending",
-        progress: 90,
-        deadline: "2024-02-10",
-        payment: "₹8,000",
-        description: "Comprehensive review and tutorial for productivity app",
+        title: "Fitness App Promotion",
+        brand: "FitTech",
+        status: "submitted",
+        platform: "YouTube",
+        payment: 15000,
+        appliedDate: "2024-01-20",
+        deadline: "2024-02-25",
+        progress: 100,
+        brief:
+          "Review our new fitness app and create workout content demonstrating key features.",
         deliverables: [
           {
-            task: "YouTube Video",
-            completed: 1,
-            total: 1,
-            status: "under-review",
+            type: "YouTube Video Review",
+            status: "submitted",
+            uploadDate: "2024-02-01",
           },
           {
-            task: "Instagram Posts (3)",
-            completed: 3,
-            total: 3,
-            status: "approved",
+            type: "Workout Video 1",
+            status: "submitted",
+            uploadDate: "2024-02-03",
           },
           {
-            task: "App Store Review",
-            completed: 1,
-            total: 1,
-            status: "completed",
+            type: "Workout Video 2",
+            status: "submitted",
+            uploadDate: "2024-02-05",
           },
         ],
-        brandImage:
-          "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop",
-        lastUpdate: "1 day ago",
-        messages: 1,
-        priority: "Medium",
+        requirements: [
+          "Minimum 25K subscribers",
+          "Fitness content creator",
+          "Regular posting schedule",
+        ],
+        analytics: {
+          views: 45000,
+          likes: 3200,
+          comments: 180,
+          subscribers: 890,
+        },
       },
       {
         id: 3,
-        brand: "FitLife",
-        title: "Fitness Challenge",
-        status: "Just Started",
-        progress: 20,
-        deadline: "2024-03-01",
-        payment: "₹12,000",
-        description: "30-day fitness challenge with supplement integration",
+        title: "Skincare Product Review",
+        brand: "GlowBeauty",
+        status: "paid",
+        platform: "Instagram",
+        payment: 12000,
+        appliedDate: "2024-01-10",
+        deadline: "2024-01-30",
+        progress: 100,
+        brief:
+          "30-day skincare journey documenting results with our new product line.",
         deliverables: [
           {
-            task: "Week 1 Progress Post",
-            completed: 1,
-            total: 1,
+            type: "Product Unboxing Reel",
             status: "completed",
+            uploadDate: "2024-01-12",
           },
           {
-            task: "Week 2 Progress Post",
-            completed: 0,
-            total: 1,
-            status: "pending",
+            type: "30-day Journey Posts",
+            status: "completed",
+            uploadDate: "2024-01-30",
           },
           {
-            task: "Week 3 Progress Post",
-            completed: 0,
-            total: 1,
-            status: "pending",
-          },
-          {
-            task: "Week 4 Progress Post",
-            completed: 0,
-            total: 1,
-            status: "pending",
-          },
-          {
-            task: "Final Transformation Video",
-            completed: 0,
-            total: 1,
-            status: "pending",
+            type: "Final Review Post",
+            status: "completed",
+            uploadDate: "2024-01-31",
           },
         ],
-        brandImage:
-          "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100&h=100&fit=crop",
-        lastUpdate: "3 hours ago",
-        messages: 0,
-        priority: "High",
+        requirements: [
+          "Minimum 30K followers",
+          "Beauty/Skincare content",
+          "Authentic reviews",
+        ],
+        analytics: {
+          reach: 89000,
+          engagement: 6780,
+          clicks: 890,
+          saves: 1200,
+        },
       },
-    ],
-    completed: [
       {
         id: 4,
-        brand: "EcoLife",
-        title: "Sustainable Living Series",
-        status: "Completed",
-        progress: 100,
-        deadline: "2024-01-30",
-        payment: "₹10,000",
-        completedDate: "2024-01-28",
-        rating: 4.8,
-        brandImage:
-          "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=100&h=100&fit=crop",
+        title: "Travel Destination Showcase",
+        brand: "WanderLust Tours",
+        status: "applied",
+        platform: "Instagram",
+        payment: 50000,
+        appliedDate: "2024-02-01",
+        deadline: "2024-03-15",
+        progress: 0,
+        brief:
+          "Showcase beautiful destinations with our travel packages, highlighting unique experiences.",
         deliverables: [
+          { type: "Instagram Posts (5)", status: "pending", uploadDate: null },
           {
-            task: "Instagram Posts (5)",
-            completed: 5,
-            total: 5,
-            status: "approved",
+            type: "Instagram Stories (10)",
+            status: "pending",
+            uploadDate: null,
           },
-          {
-            task: "Instagram Stories (10)",
-            completed: 10,
-            total: 10,
-            status: "approved",
-          },
-          {
-            task: "TikTok Videos (3)",
-            completed: 3,
-            total: 3,
-            status: "approved",
-          },
+          { type: "Instagram Reels (2)", status: "pending", uploadDate: null },
         ],
+        requirements: [
+          "Minimum 75K followers",
+          "Travel content creator",
+          "Professional photography skills",
+        ],
+        analytics: null,
       },
       {
         id: 5,
-        brand: "GameZone",
-        title: "Gaming Setup Review",
-        status: "Completed",
-        progress: 100,
-        deadline: "2024-01-20",
-        payment: "₹18,000",
-        completedDate: "2024-01-18",
-        rating: 4.9,
-        brandImage:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop",
+        title: "Food Delivery App Launch",
+        brand: "QuickBites",
+        status: "approved",
+        platform: "TikTok",
+        payment: 20000,
+        appliedDate: "2024-01-25",
+        deadline: "2024-02-22",
+        progress: 30,
+        brief:
+          "Create engaging content about food ordering experience with creative storytelling.",
         deliverables: [
           {
-            task: "YouTube Setup Tour",
-            completed: 1,
-            total: 1,
-            status: "approved",
+            type: "TikTok Video 1",
+            status: "completed",
+            uploadDate: "2024-02-05",
           },
-          {
-            task: "Product Review Videos (2)",
-            completed: 2,
-            total: 2,
-            status: "approved",
-          },
-          {
-            task: "Live Stream Sessions (3)",
-            completed: 3,
-            total: 3,
-            status: "approved",
-          },
+          { type: "TikTok Video 2", status: "pending", uploadDate: null },
+          { type: "TikTok Video 3", status: "pending", uploadDate: null },
         ],
+        requirements: [
+          "Minimum 40K followers",
+          "Food content creator",
+          "Creative video skills",
+        ],
+        analytics: {
+          views: 78000,
+          likes: 5600,
+          shares: 890,
+          comments: 340,
+        },
       },
-    ],
-    pending: [
-      {
-        id: 6,
-        brand: "TravelWise",
-        title: "Budget Travel Guide",
-        status: "Applied",
-        appliedDate: "2024-02-01",
-        deadline: "2024-02-28",
-        payment: "₹25,000",
-        description: "Create comprehensive budget travel content",
-        brandImage:
-          "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100&h=100&fit=crop",
-        applicationStatus: "Under Review",
-        estimatedResponse: "3-5 days",
-      },
-      {
-        id: 7,
-        brand: "BeautyGlow",
-        title: "Skincare Routine Campaign",
-        status: "Proposal Sent",
-        appliedDate: "2024-01-28",
-        deadline: "2024-02-25",
-        payment: "₹20,000",
-        description: "Showcase morning and evening skincare routines",
-        brandImage:
-          "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop",
-        applicationStatus: "Awaiting Response",
-        estimatedResponse: "2-3 days",
-      },
-    ],
+    ];
+    setCampaigns(sampleCampaigns);
+  }, []);
+
+  const tabs = [
+    {
+      id: "applied",
+      name: "Applied",
+      count: campaigns.filter((c) => c.status === "applied").length,
+    },
+    {
+      id: "approved",
+      name: "Approved",
+      count: campaigns.filter((c) => c.status === "approved").length,
+    },
+    {
+      id: "submitted",
+      name: "Submitted",
+      count: campaigns.filter((c) => c.status === "submitted").length,
+    },
+    {
+      id: "paid",
+      name: "Paid",
+      count: campaigns.filter((c) => c.status === "paid").length,
+    },
+  ];
+
+  const getFilteredCampaigns = () => {
+    let filtered = campaigns.filter(
+      (campaign) => campaign.status === activeTab,
+    );
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (campaign) =>
+          campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          campaign.brand.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
+
+    // Platform filter
+    if (selectedFilters.platform !== "all") {
+      filtered = filtered.filter(
+        (campaign) =>
+          campaign.platform.toLowerCase() ===
+          selectedFilters.platform.toLowerCase(),
+      );
+    }
+
+    // Brand filter
+    if (selectedFilters.brand !== "all") {
+      filtered = filtered.filter(
+        (campaign) => campaign.brand === selectedFilters.brand,
+      );
+    }
+
+    return filtered;
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "In Progress":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "Review Pending":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "Just Started":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "Completed":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
-      case "Applied":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "Proposal Sent":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
+      case "applied":
+        return "bg-blue-600/20 text-blue-400 border-blue-400/30";
+      case "approved":
+        return "bg-green-600/20 text-green-400 border-green-400/30";
+      case "submitted":
+        return "bg-yellow-600/20 text-yellow-400 border-yellow-400/30";
+      case "paid":
+        return "bg-purple-600/20 text-purple-400 border-purple-400/30";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+        return "bg-gray-600/20 text-gray-400 border-gray-400/30";
     }
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "High":
-        return "text-red-600";
-      case "Medium":
-        return "text-yellow-600";
-      case "Low":
-        return "text-green-600";
+  const getDeliverableStatusColor = (status) => {
+    switch (status) {
+      case "completed":
+        return "text-green-400";
+      case "submitted":
+        return "text-yellow-400";
+      case "pending":
+        return "text-gray-400";
       default:
-        return "text-gray-600";
+        return "text-gray-400";
     }
   };
 
-  const getDeliverableStatusIcon = (status) => {
+  const getDeliverableIcon = (status) => {
     switch (status) {
       case "completed":
         return "✅";
-      case "approved":
-        return "🎉";
-      case "under-review":
+      case "submitted":
         return "⏳";
-      case "in-progress":
-        return "🔄";
       case "pending":
-        return "⏸️";
+        return "⭕";
       default:
-        return "❓";
+        return "⭕";
     }
   };
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const handleContentUpload = (campaignId, deliverableIndex) => {
+    setUploadingContent({ campaignId, deliverableIndex });
+
+    // Simulate upload process
+    setTimeout(() => {
+      setCampaigns((prev) =>
+        prev.map((campaign) => {
+          if (campaign.id === campaignId) {
+            const updatedDeliverables = [...campaign.deliverables];
+            updatedDeliverables[deliverableIndex] = {
+              ...updatedDeliverables[deliverableIndex],
+              status: "submitted",
+              uploadDate: new Date().toISOString().split("T")[0],
+            };
+            return { ...campaign, deliverables: updatedDeliverables };
+          }
+          return campaign;
+        }),
+      );
+      setUploadingContent(null);
+    }, 2000);
+  };
+
+  const filteredCampaigns = getFilteredCampaigns();
+  const uniqueBrands = [...new Set(campaigns.map((c) => c.brand))];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Navbar />
-
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                My Campaigns
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage your active campaigns and track progress
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {campaigns.active.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Active
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {campaigns.completed.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Completed
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {campaigns.pending.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Pending
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white pt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            My Campaigns
+          </h1>
+          <p className="text-xl text-gray-400">
+            Manage your active campaigns and track your progress
+          </p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-8">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex space-x-8 px-6">
-              {[
-                {
-                  id: "active",
-                  name: "Active Campaigns",
-                  count: campaigns.active.length,
-                },
-                {
-                  id: "completed",
-                  name: "Completed",
-                  count: campaigns.completed.length,
-                },
-                {
-                  id: "pending",
-                  name: "Pending Applications",
-                  count: campaigns.pending.length,
-                },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? "border-purple-500 text-purple-600 dark:text-purple-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {tab.name} ({tab.count})
-                </button>
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-700/50">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-t-xl font-semibold transition-all duration-300 ${
+                activeTab === tab.id
+                  ? "bg-purple-600/20 text-purple-400 border-b-2 border-purple-400"
+                  : "text-gray-400 hover:text-white hover:bg-gray-800/50"
+              }`}
+            >
+              <span>{tab.name}</span>
+              <span className="bg-gray-700/50 text-gray-300 px-2 py-1 rounded-full text-xs">
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-8">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search campaigns or brands..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 pl-10 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50 transition-all duration-300"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-3">
+            <select
+              value={selectedFilters.platform}
+              onChange={(e) =>
+                setSelectedFilters((prev) => ({
+                  ...prev,
+                  platform: e.target.value,
+                }))
+              }
+              className="bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
+            >
+              <option value="all">All Platforms</option>
+              <option value="instagram">Instagram</option>
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+            </select>
+
+            <select
+              value={selectedFilters.brand}
+              onChange={(e) =>
+                setSelectedFilters((prev) => ({
+                  ...prev,
+                  brand: e.target.value,
+                }))
+              }
+              className="bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
+            >
+              <option value="all">All Brands</option>
+              {uniqueBrands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
               ))}
-            </nav>
+            </select>
           </div>
         </div>
 
-        {/* Campaign Cards */}
-        <div className="space-y-6">
-          {campaigns[activeTab].map((campaign) => (
+        {/* Campaigns Table */}
+        <div className="space-y-4">
+          {filteredCampaigns.map((campaign) => (
             <div
               key={campaign.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all"
+              className="bg-white/10 backdrop-blur-lg rounded-2xl border border-gray-700/50 overflow-hidden hover:border-purple-400/50 transition-all duration-300"
             >
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={campaign.brandImage}
-                      alt={campaign.brand}
-                      className="w-16 h-16 rounded-xl object-cover"
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {campaign.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {campaign.brand}
-                      </p>
-                      <div className="flex items-center space-x-3 mt-1">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}
-                        >
-                          {campaign.status}
-                        </span>
-                        {campaign.priority && (
-                          <span
-                            className={`text-xs font-medium ${getPriorityColor(campaign.priority)}`}
-                          >
-                            {campaign.priority} Priority
-                          </span>
-                        )}
-                        {campaign.messages > 0 && (
-                          <span className="flex items-center text-xs text-purple-600 dark:text-purple-400">
-                            💬 {campaign.messages} new messages
-                          </span>
-                        )}
-                      </div>
-                    </div>
+              {/* Table Row */}
+              <div
+                className="p-6 cursor-pointer hover:bg-gray-800/20 transition-colors duration-300"
+                onClick={() =>
+                  setExpandedCampaign(
+                    expandedCampaign === campaign.id ? null : campaign.id,
+                  )
+                }
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center">
+                  {/* Campaign Info */}
+                  <div className="lg:col-span-2">
+                    <h3 className="font-bold text-white mb-1">
+                      {campaign.title}
+                    </h3>
+                    <p className="text-gray-400 text-sm">{campaign.brand}</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600 mb-1">
-                      {campaign.payment}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Due: {campaign.deadline}
-                    </div>
-                    {campaign.completedDate && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Completed: {campaign.completedDate}
+
+                  {/* Status */}
+                  <div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(campaign.status)}`}
+                    >
+                      {campaign.status.charAt(0).toUpperCase() +
+                        campaign.status.slice(1)}
+                    </span>
+                  </div>
+
+                  {/* Payment */}
+                  <div>
+                    <p className="font-bold text-green-400">
+                      {formatCurrency(campaign.payment)}
+                    </p>
+                  </div>
+
+                  {/* Due Date */}
+                  <div>
+                    <p className="text-gray-300">
+                      {new Date(campaign.deadline).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <div className="relative group">
+                      <button className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white transition-all duration-300">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                          />
+                        </svg>
+                      </button>
+
+                      {/* Dropdown */}
+                      <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800/95 backdrop-blur-lg rounded-xl border border-gray-700/50 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">
+                        <button className="w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-300">
+                          View Details
+                        </button>
+                        {campaign.status === "approved" && (
+                          <button className="w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-300">
+                            Upload Content
+                          </button>
+                        )}
+                        <button className="w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-300">
+                          Messages
+                        </button>
+                        {campaign.analytics && (
+                          <button className="w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-300">
+                            View Analytics
+                          </button>
+                        )}
                       </div>
-                    )}
-                    {campaign.rating && (
-                      <div className="flex items-center justify-end mt-1">
-                        <span className="text-yellow-400">⭐</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
-                          {campaign.rating}
-                        </span>
-                      </div>
-                    )}
+                    </div>
+
+                    <svg
+                      className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${
+                        expandedCampaign === campaign.id ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
 
-                {/* Description */}
-                {campaign.description && (
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    {campaign.description}
-                  </p>
-                )}
-
-                {/* Progress Bar (for active campaigns) */}
-                {activeTab === "active" && (
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Progress
-                      </span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {campaign.progress}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${campaign.progress}%` }}
-                      ></div>
-                    </div>
+                {/* Progress Bar */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-400">Progress</span>
+                    <span className="text-sm text-gray-300">
+                      {campaign.progress}%
+                    </span>
                   </div>
-                )}
-
-                {/* Deliverables */}
-                {campaign.deliverables && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                      Deliverables
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {campaign.deliverables.map((deliverable, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg">
-                              {getDeliverableStatusIcon(deliverable.status)}
-                            </span>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {deliverable.task}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {deliverable.completed}/{deliverable.total}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Application Status (for pending campaigns) */}
-                {activeTab === "pending" && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div>
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                          {campaign.applicationStatus}
-                        </span>
-                        <p className="text-xs text-blue-600 dark:text-blue-300">
-                          Expected response: {campaign.estimatedResponse}
-                        </p>
-                      </div>
-                      <span className="text-xs text-blue-600 dark:text-blue-300">
-                        Applied: {campaign.appliedDate}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={() => setSelectedCampaign(campaign)}
-                      className="text-purple-600 dark:text-purple-400 hover:text-purple-500 text-sm font-medium"
-                    >
-                      View Details
-                    </button>
-                    {activeTab === "active" && (
-                      <>
-                        <button className="text-blue-600 dark:text-blue-400 hover:text-blue-500 text-sm font-medium">
-                          Messages ({campaign.messages || 0})
-                        </button>
-                        <button className="text-green-600 dark:text-green-400 hover:text-green-500 text-sm font-medium">
-                          Upload Content
-                        </button>
-                      </>
-                    )}
-                    {activeTab === "completed" && (
-                      <button className="text-gray-600 dark:text-gray-400 hover:text-gray-500 text-sm font-medium">
-                        Download Invoice
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    {activeTab === "active" && campaign.lastUpdate && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Updated {campaign.lastUpdate}
-                      </span>
-                    )}
-                    {activeTab === "pending" && (
-                      <button className="text-red-600 dark:text-red-400 hover:text-red-500 text-sm font-medium">
-                        Withdraw Application
-                      </button>
-                    )}
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${campaign.progress}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
+
+              {/* Expanded Content */}
+              {expandedCampaign === campaign.id && (
+                <div className="border-t border-gray-700/50 p-6 bg-gray-800/20">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Campaign Brief */}
+                    <div>
+                      <h4 className="font-bold text-white mb-3">
+                        📝 Campaign Brief
+                      </h4>
+                      <p className="text-gray-300 mb-4">{campaign.brief}</p>
+
+                      <h5 className="font-semibold text-white mb-2">
+                        Requirements:
+                      </h5>
+                      <ul className="space-y-1">
+                        {campaign.requirements.map((req, index) => (
+                          <li
+                            key={index}
+                            className="text-gray-300 text-sm flex items-center"
+                          >
+                            <span className="text-green-400 mr-2">✓</span>
+                            {req}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Deliverables */}
+                    <div>
+                      <h4 className="font-bold text-white mb-3">
+                        📋 Deliverables
+                      </h4>
+                      <div className="space-y-3">
+                        {campaign.deliverables.map((deliverable, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <span className="text-lg">
+                                {getDeliverableIcon(deliverable.status)}
+                              </span>
+                              <div>
+                                <p className="text-white font-medium">
+                                  {deliverable.type}
+                                </p>
+                                <p
+                                  className={`text-sm ${getDeliverableStatusColor(deliverable.status)}`}
+                                >
+                                  {deliverable.status.charAt(0).toUpperCase() +
+                                    deliverable.status.slice(1)}
+                                  {deliverable.uploadDate &&
+                                    ` • ${new Date(deliverable.uploadDate).toLocaleDateString()}`}
+                                </p>
+                              </div>
+                            </div>
+
+                            {deliverable.status === "pending" &&
+                              campaign.status === "approved" && (
+                                <button
+                                  onClick={() =>
+                                    handleContentUpload(campaign.id, index)
+                                  }
+                                  disabled={
+                                    uploadingContent?.campaignId ===
+                                      campaign.id &&
+                                    uploadingContent?.deliverableIndex === index
+                                  }
+                                  className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 px-3 py-1 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
+                                >
+                                  {uploadingContent?.campaignId ===
+                                    campaign.id &&
+                                  uploadingContent?.deliverableIndex === index
+                                    ? "Uploading..."
+                                    : "Upload"}
+                                </button>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Analytics */}
+                  {campaign.analytics && (
+                    <div className="mt-8">
+                      <h4 className="font-bold text-white mb-4">
+                        📊 Campaign Analytics
+                      </h4>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {Object.entries(campaign.analytics).map(
+                          ([key, value]) => (
+                            <div
+                              key={key}
+                              className="bg-gray-700/30 rounded-lg p-4 text-center"
+                            >
+                              <p className="text-2xl font-bold text-purple-400">
+                                {value.toLocaleString()}
+                              </p>
+                              <p className="text-gray-400 text-sm capitalize">
+                                {key}
+                              </p>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        {campaigns[activeTab].length === 0 && (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
-            <div className="text-6xl mb-4">
-              {activeTab === "active"
-                ? "📝"
-                : activeTab === "completed"
-                  ? "🎉"
-                  : "⏳"}
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {activeTab === "active"
-                ? "No active campaigns"
-                : activeTab === "completed"
-                  ? "No completed campaigns yet"
-                  : "No pending applications"}
+        {/* Empty State */}
+        {filteredCampaigns.length === 0 && (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">📋</div>
+            <h3 className="text-xl font-semibold text-gray-400 mb-2">
+              No campaigns found
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              {activeTab === "active"
-                ? "Start by discovering and applying to campaigns that match your content style."
-                : activeTab === "completed"
-                  ? "Complete your first campaign to see it here."
-                  : "Apply to campaigns to see your applications here."}
+            <p className="text-gray-500 mb-6">
+              {activeTab === "applied"
+                ? "You haven't applied to any campaigns yet"
+                : `No ${activeTab} campaigns found`}
             </p>
-            <a
-              href="/creator/discover-campaigns"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium"
-            >
-              Discover Campaigns
-            </a>
+            {activeTab === "applied" && (
+              <a
+                href="/creator/discover-campaigns"
+                className="inline-flex items-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                Discover Campaigns
+              </a>
+            )}
           </div>
         )}
       </div>
-
-      {/* Campaign Detail Modal */}
-      {selectedCampaign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Campaign Details
-                </h2>
-                <button
-                  onClick={() => setSelectedCampaign(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={selectedCampaign.brandImage}
-                    alt={selectedCampaign.brand}
-                    className="w-20 h-20 rounded-xl object-cover"
-                  />
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {selectedCampaign.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-2">
-                      {selectedCampaign.brand}
-                    </p>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedCampaign.status)}`}
-                    >
-                      {selectedCampaign.status}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedCampaign.description && (
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      Description
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {selectedCampaign.description}
-                    </p>
-                  </div>
-                )}
-
-                {selectedCampaign.deliverables && (
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                      Deliverables
-                    </h4>
-                    <div className="space-y-3">
-                      {selectedCampaign.deliverables.map(
-                        (deliverable, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <span className="text-2xl">
-                                {getDeliverableStatusIcon(deliverable.status)}
-                              </span>
-                              <div>
-                                <span className="font-medium text-gray-900 dark:text-white">
-                                  {deliverable.task}
-                                </span>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                                  Status: {deliverable.status.replace("-", " ")}
-                                </p>
-                              </div>
-                            </div>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              {deliverable.completed}/{deliverable.total}
-                            </span>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Payment
-                    </div>
-                    <div className="text-xl font-semibold text-green-600">
-                      {selectedCampaign.payment}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Deadline
-                    </div>
-                    <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {selectedCampaign.deadline}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => setSelectedCampaign(null)}
-                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Close
-                  </button>
-                  <div className="flex space-x-3">
-                    {activeTab === "active" && (
-                      <>
-                        <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                          Open Messages
-                        </button>
-                        <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
-                          Upload Content
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Footer />
     </div>
   );
 };
