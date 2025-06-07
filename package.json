@@ -1,14 +1,18 @@
 {
-  "name": "influbazzar",
+  "name": "influbazzar-frontend",
   "version": "1.0.0",
-  "description": "Comprehensive influencer marketing platform connecting brands with authentic creators",
+  "description": "Comprehensive influencer marketing platform - Frontend application with React, TypeScript, and modern UI components",
   "type": "module",
+  "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 8080",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "test": "vitest",
+    "analyze": "vite-bundle-analyzer"
   },
   "keywords": [
     "influencer-marketing",
@@ -17,15 +21,16 @@
     "social-media",
     "react",
     "typescript",
-    "vite"
+    "vite",
+    "frontend"
   ],
-  "author": "Ajay Babu Yadavalli",
+  "author": "Influbazzar Development Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ajaybabuyadavalli/Builder-flare-realm.git"
+    "url": "git+https://github.com/your-org/influbazzar-frontend.git"
   },
-  "homepage": "https://github.com/ajaybabuyadavalli/Builder-flare-realm#readme",
+  "homepage": "https://influbazzar.com",
   "dependencies": {
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-avatar": "^1.0.4",
@@ -49,7 +54,10 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "axios": "^1.6.0",
+    "react-query": "^3.39.3",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
@@ -63,12 +71,26 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.38",
+    "prettier": "^3.0.0",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.5",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "vitest": "^1.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
