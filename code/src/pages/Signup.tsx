@@ -1,656 +1,437 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
 import { RippleCard } from "@/components/ui/ripple-card";
+import { useToast } from "@/hooks/use-toast";
 import NavbarDynamic from "@/components/NavbarDynamic";
 import { Footer } from "@/components/Footer";
 import {
+  User,
+  Mail,
+  Lock,
+  Phone,
+  Calendar,
   Eye,
   EyeOff,
-  User,
-  Building,
-  Users,
-  Shield,
-  Rocket,
-  Camera,
-  Target,
-  BarChart3,
-  Settings,
-  ArrowRight,
-  CheckCircle,
-  AlertCircle,
-  Mail,
-  KeyRound,
+  UserPlus,
   Sparkles,
-  Heart,
-  Star,
+  Shield,
   Zap,
-  Globe,
+  Award,
 } from "lucide-react";
 
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+}
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+}
+
 const Signup = () => {
-  const [searchParams] = useSearchParams();
-  const [selectedRole, setSelectedRole] = useState(
-    searchParams.get("role") || "creator",
-  );
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    companyName: "",
-    platform: "",
-    niche: "",
-    campaignsHandled: "",
-    termsAccepted: false,
+    dateOfBirth: "",
+    phoneNumber: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const roles = [
-    {
-      id: "creator",
-      label: "Creator",
-      icon: Camera,
-      color: "from-blue-500 to-cyan-500",
-      description: "Content creators and influencers",
-      avatar: "🎨",
-      redirectTo: "/creator/dashboard",
-      additionalFields: [
-        {
-          key: "platform",
-          label: "Primary Platform",
-          type: "select",
-          options: ["Instagram", "YouTube", "TikTok", "Twitter"],
-        },
-        {
-          key: "niche",
-          label: "Content Niche",
-          type: "select",
-          options: [
-            "Beauty",
-            "Fashion",
-            "Fitness",
-            "Food",
-            "Tech",
-            "Travel",
-            "Lifestyle",
-          ],
-        },
-      ],
-    },
-    {
-      id: "brand",
-      label: "Brand",
-      icon: Target,
-      color: "from-purple-500 to-pink-500",
-      description: "Businesses and marketing teams",
-      avatar: "🏢",
-      redirectTo: "/brand/dashboard",
-      additionalFields: [
-        {
-          key: "companyName",
-          label: "Company Name",
-          type: "text",
-          placeholder: "Enter your company name",
-        },
-      ],
-    },
-    {
-      id: "agency",
-      label: "Agency",
-      icon: BarChart3,
-      color: "from-orange-500 to-red-500",
-      description: "Marketing agencies and managers",
-      avatar: "📊",
-      redirectTo: "/agency/dashboard",
-      additionalFields: [
-        {
-          key: "companyName",
-          label: "Agency Name",
-          type: "text",
-          placeholder: "Enter your agency name",
-        },
-        {
-          key: "campaignsHandled",
-          label: "Campaigns Handled Monthly",
-          type: "select",
-          options: ["1-10", "11-50", "51-100", "100+"],
-        },
-      ],
-    },
-    {
-      id: "admin",
-      label: "Admin",
-      icon: Shield,
-      color: "from-green-500 to-emerald-500",
-      description: "Platform administrators",
-      avatar: "🛡️",
-      redirectTo: "/admin/overview",
-      additionalFields: [],
-    },
+  // Mock existing users for validation
+  const existingUsers = [
+    { email: "creator@demo.com", phone: "+911234567890" },
+    { email: "brand@demo.com", phone: "+911234567891" },
   ];
 
-  const currentRole =
-    roles.find((role) => role.id === selectedRole) || roles[0];
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
 
-  useEffect(() => {
-    const roleParam = searchParams.get("role");
-    if (roleParam && roles.find((role) => role.id === roleParam)) {
-      setSelectedRole(roleParam);
+    // Required field validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
     }
-  }, [searchParams]);
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    } else if (existingUsers.some((user) => user.email === formData.email)) {
+      newErrors.email = "This email is already registered";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain uppercase, lowercase, and number";
+    }
+
+    // Phone validation
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!/^\+91[6-9]\d{9}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber =
+        "Please enter a valid Indian mobile number (+91XXXXXXXXXX)";
+    } else if (
+      existingUsers.some((user) => user.phone === formData.phoneNumber)
+    ) {
+      newErrors.phoneNumber = "This phone number is already registered";
+    }
+
+    // Date of birth validation (must be 16+)
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = "Date of birth is required";
+    } else {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      if (age < 16) {
+        newErrors.dateOfBirth = "You must be at least 16 years old to sign up";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Password mismatch ❌",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.termsAccepted) {
-      toast({
-        title: "Terms required ❌",
-        description: "Please accept the Terms & Privacy Policy to continue.",
-        variant: "destructive",
-      });
+    if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
 
     // Simulate API call
-    const signupTimeout = setTimeout(() => {
+    setTimeout(() => {
       setIsLoading(false);
 
+      // Store signup data for OTP verification
+      localStorage.setItem("pendingSignup", JSON.stringify(formData));
+
       toast({
-        title: "Account created successfully! 🎉",
-        description: "Welcome to Influbazzar! Redirecting to your dashboard...",
+        title: "Account Created! 🎉",
+        description: "Please verify your phone number to continue.",
       });
 
-      const redirectTimeout = setTimeout(() => {
-        navigate(currentRole.redirectTo);
-      }, 1500);
-
-      // Cleanup redirect timeout
-      return () => clearTimeout(redirectTimeout);
-    }, 2000);
-
-    // Cleanup signup timeout
-    return () => clearTimeout(signupTimeout);
-  };
-
-  const fillDemoData = () => {
-    setFormData({
-      ...formData,
-      email: `demo.${selectedRole}@influbazzar.com`,
-      password: "password123",
-      confirmPassword: "password123",
-      companyName:
-        selectedRole === "brand"
-          ? "Demo Brand Co."
-          : selectedRole === "agency"
-            ? "Demo Agency Ltd."
-            : "",
-      platform: selectedRole === "creator" ? "Instagram" : "",
-      niche: selectedRole === "creator" ? "Lifestyle" : "",
-      campaignsHandled: selectedRole === "agency" ? "11-50" : "",
-      termsAccepted: true,
-    });
+      // Redirect to OTP verification
+      navigate("/otp-verification");
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black">
       <NavbarDynamic />
 
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Signup Form */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Motivation & Features */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="order-2 lg:order-1"
+              className="space-y-8"
             >
-              <div className="text-center mb-8">
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.8, type: "spring" }}
-                  className="text-6xl mb-4"
-                >
-                  {currentRole.avatar}
-                </motion.div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  Join Influbazzar Today
+              <div className="text-center lg:text-left">
+                <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Join 50,000+ Creators
+                </Badge>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  Start Your Creator
+                  <br />
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Journey Today
+                  </span>
                 </h1>
-                <p className="text-muted-foreground text-lg">
-                  Select your role and start collaborating!
+                <p className="text-xl text-gray-300 mb-8">
+                  Join thousands of creators earning through brand
+                  collaborations. Secure payments, verified opportunities, and
+                  real growth.
                 </p>
               </div>
 
+              <div className="space-y-6">
+                {[
+                  {
+                    icon: Shield,
+                    title: "Secure Payments",
+                    description:
+                      "Escrow-protected payments. Get paid within 24 hours of campaign completion.",
+                  },
+                  {
+                    icon: Zap,
+                    title: "Instant Matching",
+                    description:
+                      "AI-powered campaign matching based on your niche and audience.",
+                  },
+                  {
+                    icon: Award,
+                    title: "Verified Brands",
+                    description:
+                      "Work with legitimate brands and companies. No fake campaigns.",
+                  },
+                ].map((feature, index) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                    className="flex items-start space-x-4"
+                  >
+                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 rounded-lg">
+                      <feature.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-white mb-2">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-300">{feature.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-800/20 to-pink-800/20 backdrop-blur p-6 rounded-xl border border-purple-500/20">
+                <div className="text-center">
+                  <h3 className="font-bold text-xl text-white mb-2">
+                    💰 Average Creator Earnings: ₹25,000/month
+                  </h3>
+                  <p className="text-sm text-gray-300">
+                    Top creators earn ₹1L+ monthly through brand partnerships
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Side - Signup Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               <RippleCard>
-                <Card className="shadow-2xl border-0 glass">
-                  <CardHeader>
-                    <CardTitle className="text-center">
+                <Card className="bg-gray-800/50 backdrop-blur border-gray-700">
+                  <CardHeader className="text-center pb-4">
+                    <CardTitle className="text-2xl text-white flex items-center justify-center">
+                      <UserPlus className="w-6 h-6 mr-2" />
                       Create Your Account
                     </CardTitle>
+                    <p className="text-gray-300">
+                      Start earning with brand collaborations
+                    </p>
                   </CardHeader>
-
                   <CardContent className="space-y-6">
-                    {/* Role Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">
-                        Select Your Role
-                      </Label>
-                      <Tabs
-                        value={selectedRole}
-                        onValueChange={setSelectedRole}
-                      >
-                        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-1">
-                          {roles.map((role) => (
-                            <TabsTrigger
-                              key={role.id}
-                              value={role.id}
-                              className="flex flex-col items-center space-y-1 py-3 relative overflow-hidden group"
-                            >
-                              <RippleCard className="w-full h-full">
-                                <div className="flex flex-col items-center space-y-1">
-                                  <role.icon className="w-4 h-4" />
-                                  <span className="text-xs font-medium">
-                                    {role.label}
-                                  </span>
-                                </div>
-                              </RippleCard>
-                            </TabsTrigger>
-                          ))}
-                        </TabsList>
-                      </Tabs>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        key={selectedRole}
-                        className="text-center"
-                      >
-                        <Badge variant="outline" className="text-xs">
-                          {currentRole.description}
-                        </Badge>
-                      </motion.div>
-                    </div>
-
-                    {/* Signup Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
+                      {/* Name Fields */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <Input
+                              placeholder="First Name"
+                              value={formData.firstName}
+                              onChange={(e) =>
+                                handleInputChange("firstName", e.target.value)
+                              }
+                              className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+                            />
+                          </div>
+                          {errors.firstName && (
+                            <p className="text-red-400 text-sm mt-1">
+                              {errors.firstName}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <Input
+                              placeholder="Last Name"
+                              value={formData.lastName}
+                              onChange={(e) =>
+                                handleInputChange("lastName", e.target.value)
+                              }
+                              className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+                            />
+                          </div>
+                          {errors.lastName && (
+                            <p className="text-red-400 text-sm mt-1">
+                              {errors.lastName}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Email */}
+                      <div>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                           <Input
-                            id="email"
                             type="email"
+                            placeholder="Email Address"
                             value={formData.email}
                             onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                email: e.target.value,
-                              })
+                              handleInputChange("email", e.target.value)
                             }
-                            placeholder="Enter your email"
-                            className="pl-10"
-                            required
+                            className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
                           />
                         </div>
+                        {errors.email && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {errors.email}
+                          </p>
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="password">Password</Label>
-                          <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                            <Input
-                              id="password"
-                              type={showPassword ? "text" : "password"}
-                              value={formData.password}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  password: e.target.value,
-                                })
-                              }
-                              placeholder="Create password"
-                              className="pl-10 pr-10"
-                              required
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="confirmPassword">
-                            Confirm Password
-                          </Label>
-                          <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                            <Input
-                              id="confirmPassword"
-                              type={showConfirmPassword ? "text" : "password"}
-                              value={formData.confirmPassword}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  confirmPassword: e.target.value,
-                                })
-                              }
-                              placeholder="Confirm password"
-                              className="pl-10 pr-10"
-                              required
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                              onClick={() =>
-                                setShowConfirmPassword(!showConfirmPassword)
-                              }
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Role-specific fields */}
-                      {currentRole.additionalFields.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          transition={{ duration: 0.3 }}
-                          className="space-y-4"
-                        >
-                          <div className="pt-4 border-t">
-                            <Label className="text-sm font-medium mb-3 block">
-                              Additional Information
-                            </Label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {currentRole.additionalFields.map((field) => (
-                                <div key={field.key} className="space-y-2">
-                                  <Label htmlFor={field.key}>
-                                    {field.label}
-                                  </Label>
-                                  {field.type === "select" ? (
-                                    <select
-                                      id={field.key}
-                                      value={
-                                        formData[
-                                          field.key as keyof typeof formData
-                                        ] as string
-                                      }
-                                      onChange={(e) =>
-                                        setFormData({
-                                          ...formData,
-                                          [field.key]: e.target.value,
-                                        })
-                                      }
-                                      className="w-full px-3 py-2 border border-border rounded-md bg-background"
-                                    >
-                                      <option value="">
-                                        Select {field.label}
-                                      </option>
-                                      {field.options?.map((option) => (
-                                        <option key={option} value={option}>
-                                          {option}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <Input
-                                      id={field.key}
-                                      type="text"
-                                      value={
-                                        formData[
-                                          field.key as keyof typeof formData
-                                        ] as string
-                                      }
-                                      onChange={(e) =>
-                                        setFormData({
-                                          ...formData,
-                                          [field.key]: e.target.value,
-                                        })
-                                      }
-                                      placeholder={field.placeholder}
-                                    />
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {/* Terms Checkbox */}
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="terms"
-                          checked={formData.termsAccepted}
-                          onCheckedChange={(checked) =>
-                            setFormData({
-                              ...formData,
-                              termsAccepted: checked as boolean,
-                            })
-                          }
-                        />
-                        <Label htmlFor="terms" className="text-sm">
-                          I agree to the{" "}
-                          <Link
-                            to="/terms"
-                            className="text-purple-600 hover:underline"
+                      {/* Password */}
+                      <div>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={(e) =>
+                              handleInputChange("password", e.target.value)
+                            }
+                            className="pl-10 pr-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                           >
-                            Terms & Privacy Policy
-                          </Link>
-                        </Label>
+                            {showPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
+                        </div>
+                        {errors.password && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {errors.password}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Phone Number */}
+                      <div>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <Input
+                            placeholder="Phone Number (+91XXXXXXXXXX)"
+                            value={formData.phoneNumber}
+                            onChange={(e) =>
+                              handleInputChange("phoneNumber", e.target.value)
+                            }
+                            className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+                          />
+                        </div>
+                        {errors.phoneNumber && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {errors.phoneNumber}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Date of Birth */}
+                      <div>
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <Input
+                            type="date"
+                            value={formData.dateOfBirth}
+                            onChange={(e) =>
+                              handleInputChange("dateOfBirth", e.target.value)
+                            }
+                            className="pl-10 bg-gray-700/50 border-gray-600 text-white"
+                          />
+                        </div>
+                        {errors.dateOfBirth && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {errors.dateOfBirth}
+                          </p>
+                        )}
+                        <p className="text-gray-400 text-xs mt-1">
+                          You must be at least 16 years old
+                        </p>
                       </div>
 
                       <Button
                         type="submit"
-                        className={`w-full bg-gradient-to-r ${currentRole.color} hover:shadow-lg transition-all duration-300 relative overflow-hidden group`}
-                        disabled={
-                          isLoading ||
-                          !formData.email ||
-                          !formData.password ||
-                          !formData.confirmPassword ||
-                          !formData.termsAccepted
-                        }
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3"
+                        disabled={isLoading}
                       >
-                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                        {isLoading ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            Creating account...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Create My Account
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </>
-                        )}
+                        {isLoading ? "Creating Account..." : "Create Account"}
+                        <Sparkles className="w-5 h-5 ml-2" />
                       </Button>
                     </form>
 
-                    {/* Demo Data */}
-                    <div className="pt-6 border-t">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm font-medium">
-                            Demo Account Setup
-                          </Label>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={fillDemoData}
-                          >
-                            <Zap className="w-3 h-3 mr-1" />
-                            Fill Demo Data
-                          </Button>
-                        </div>
-
-                        <div className="p-3 bg-muted/50 rounded-lg text-xs">
-                          <p className="text-muted-foreground">
-                            Click above to auto-fill with demo credentials for
-                            quick testing
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-center pt-6 border-t">
-                      <p className="text-muted-foreground">
+                    <div className="text-center">
+                      <p className="text-gray-300">
                         Already have an account?{" "}
                         <Link
-                          to={`/login${selectedRole ? `?role=${selectedRole}` : ""}`}
-                          className="text-purple-600 hover:underline font-medium"
+                          to="/login"
+                          className="text-purple-400 hover:text-purple-300 font-medium"
                         >
-                          Login →
+                          Sign in here
                         </Link>
                       </p>
                     </div>
                   </CardContent>
                 </Card>
               </RippleCard>
-            </motion.div>
-
-            {/* Right Side - Illustration */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="order-1 lg:order-2 hidden lg:block"
-            >
-              <div className="relative">
-                {/* Animated Background */}
-                {[...Array(10)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full"
-                    style={{
-                      width: Math.random() * 80 + 30,
-                      height: Math.random() * 80 + 30,
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                    }}
-                    animate={{
-                      scale: [1, 1.3, 1],
-                      opacity: [0.2, 0.5, 0.2],
-                      y: [0, -20, 0],
-                    }}
-                    transition={{
-                      duration: Math.random() * 4 + 3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                ))}
-
-                <div className="relative z-10 text-center py-12">
-                  <motion.div
-                    animate={{
-                      y: [0, -10, 0],
-                      scale: [1, 1.02, 1],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    className="w-48 h-48 mx-auto mb-8 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-3xl flex items-center justify-center shadow-2xl"
-                  >
-                    <Rocket className="w-24 h-24 text-purple-600" />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                  >
-                    <h2 className="text-2xl font-bold mb-4">
-                      Start Your Journey
-                    </h2>
-                    <p className="text-muted-foreground max-w-sm mx-auto mb-6">
-                      Join thousands of creators, brands, and agencies building
-                      meaningful collaborations on Influbazzar.
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
-                      {[
-                        {
-                          icon: Heart,
-                          label: "Connect",
-                          color: "text-red-500",
-                        },
-                        { icon: Star, label: "Grow", color: "text-yellow-500" },
-                        { icon: Zap, label: "Earn", color: "text-blue-500" },
-                        {
-                          icon: Globe,
-                          label: "Scale",
-                          color: "text-green-500",
-                        },
-                      ].map((feature, index) => (
-                        <motion.div
-                          key={feature.label}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{
-                            duration: 0.5,
-                            delay: 0.6 + index * 0.1,
-                          }}
-                          className="flex flex-col items-center p-3 bg-background/50 backdrop-blur rounded-lg"
-                        >
-                          <feature.icon
-                            className={`w-6 h-6 ${feature.color} mb-2`}
-                          />
-                          <span className="text-xs font-medium">
-                            {feature.label}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
             </motion.div>
           </div>
         </div>
