@@ -27,6 +27,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  hasCompletedOnboarding: (userEmail: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,6 +141,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const hasCompletedOnboarding = (userEmail: string): boolean => {
+    return localStorage.getItem(`onboarding_${userEmail}`) === "completed";
+  };
+
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
@@ -166,6 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
+    hasCompletedOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
