@@ -3,14 +3,17 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+  },
   plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-<<<<<<< HEAD
   build: {
     rollupOptions: {
       output: {
@@ -34,14 +37,3 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
 }));
-=======
-  server: {
-    port: 3000,
-    host: true,
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: true,
-  },
-});
->>>>>>> c4186891ff887a93dfc37ca11a103ebd04644a3d
