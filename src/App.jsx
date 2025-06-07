@@ -6,8 +6,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/WorkingIndex"));
-const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
+const Login = lazy(() => import("./pages/SimpleLogin"));
+const Signup = lazy(() => import("./pages/SimpleSignup"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
