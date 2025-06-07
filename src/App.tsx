@@ -1,313 +1,451 @@
+import React, { Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import {
+  ProtectedRoute,
+  OnboardingProtectedRoute,
+  PublicRoute,
+  AdminRoute,
+} from "@/components/ProtectedRoute";
+import { Toaster } from "@/components/ui/sonner";
+import { Loader2 } from "lucide-react";
+
 /**
  * Main Application Component
  *
- * This is the root component that sets up the entire application structure including:
- * - Theme providers for dark/light mode
- * - Authentication context for user management
- * - React Router for navigation
- * - Global loading states
- * - Protected routes for role-based access
+ * This is the root component that sets up routing, authentication,
+ * and global providers for the Influbazzar platform.
  *
- * Architecture Notes:
- * - Uses React Router v6 for client-side routing
- * - Implements lazy loading for code splitting
- * - Role-based route protection (Creator, Brand, Agency, Admin)
- * - Onboarding flow management for new users
- *
- * Backend Integration:
- * {{Dynamic}} - Authentication tokens should be managed here
- * {{Dynamic}} - API base URL configuration
- * {{Dynamic}} - User session persistence
+ * Backend Integration Notes:
+ * - Configure error tracking (Sentry integration)
+ * - Set up analytics tracking (Google Analytics, Mixpanel)
+ * - Add service worker registration for PWA features
+ * - Implement global error boundaries
+ * - Add performance monitoring
  */
 
-import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "next-themes";
-import ProtectedRoute from "./components/ProtectedRoute";
-import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute";
-import { LoadingScreen } from "./components/ui/loading";
-import { Toaster } from "./components/ui/toaster";
-
-// ===== LAZY LOADED COMPONENTS =====
-// Code splitting for better performance - components are loaded only when needed
-
-// Public pages - accessible to all users
-const Index = lazy(() => import("./pages/Index"));
-const About = lazy(() => import("./pages/About"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Testimonials = lazy(() => import("./pages/Testimonials"));
-const CaseStudies = lazy(() => import("./pages/CaseStudies"));
-const CaseStudyDetail = lazy(() => import("./pages/CaseStudyDetail"));
-
-// Authentication pages - public access for login/signup
-const Login = lazy(() => import("./pages/auth/Login"));
-const Signup = lazy(() => import("./pages/auth/Signup"));
-const OTPVerification = lazy(() => import("./pages/auth/OTPVerification"));
-const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-
-// Onboarding flow - authenticated users only
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-
-// Creator dashboard pages - Creator role only
-const CreatorDashboard = lazy(() => import("./pages/creator/Dashboard"));
-const DiscoverCampaigns = lazy(
-  () => import("./pages/creator/DiscoverCampaigns"),
+// Loading Component
+const AppLoader = ({ message = "Loading..." }: { message?: string }) => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="text-center space-y-4">
+      <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  </div>
 );
-const MyCampaigns = lazy(() => import("./pages/creator/MyCampaigns"));
-const MyReels = lazy(() => import("./pages/creator/MyReels"));
-const CreatorEarnings = lazy(() => import("./pages/creator/Earnings"));
-const CreatorAnalytics = lazy(() => import("./pages/creator/Analytics"));
-const CreatorProfile = lazy(() => import("./pages/creator/Profile"));
-const CreatorSettings = lazy(() => import("./pages/creator/Settings"));
 
-// Brand dashboard pages - Brand role only
-const BrandDashboard = lazy(() => import("./pages/brand/Dashboard"));
-const DiscoverCreators = lazy(() => import("./pages/brand/DiscoverCreators"));
-const BrandCampaigns = lazy(() => import("./pages/brand/Campaigns"));
-const NewCampaign = lazy(() => import("./pages/brand/NewCampaign"));
-const BrandAnalytics = lazy(() => import("./pages/brand/Analytics"));
-const BrandApprovals = lazy(() => import("./pages/brand/Approvals"));
-const BrandPayments = lazy(() => import("./pages/brand/Payments"));
-const BrandSettings = lazy(() => import("./pages/brand/Settings"));
+// Lazy load all page components for better performance
+// Public Pages
+const LandingPage = React.lazy(() => import("@/pages/LandingPage"));
+const AboutPage = React.lazy(() => import("@/pages/AboutPage"));
+const PricingPage = React.lazy(() => import("@/pages/PricingPage"));
+const ContactPage = React.lazy(() => import("@/pages/ContactPage"));
 
-// Error and utility pages
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Authentication Pages
+const LoginPage = React.lazy(() => import("@/pages/auth/LoginPage"));
+const SignupPage = React.lazy(() => import("@/pages/auth/SignupPage"));
+const OTPVerificationPage = React.lazy(
+  () => import("@/pages/auth/OTPVerificationPage"),
+);
+const ForgotPasswordPage = React.lazy(
+  () => import("@/pages/auth/ForgotPasswordPage"),
+);
 
-/**
- * Main App Component
- *
- * Provides the foundational structure for the entire application including
- * routing, authentication, theming, and error boundaries.
- */
+// Onboarding
+const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
+
+// Creator Pages
+const CreatorDashboard = React.lazy(() => import("@/pages/creator/Dashboard"));
+const DiscoverCampaigns = React.lazy(
+  () => import("@/pages/creator/DiscoverCampaigns"),
+);
+const MyCampaigns = React.lazy(() => import("@/pages/creator/MyCampaigns"));
+const MyContent = React.lazy(() => import("@/pages/creator/MyContent"));
+const CreatorEarnings = React.lazy(() => import("@/pages/creator/Earnings"));
+const CreatorAnalytics = React.lazy(() => import("@/pages/creator/Analytics"));
+const CreatorProfile = React.lazy(() => import("@/pages/creator/Profile"));
+const CreatorSettings = React.lazy(() => import("@/pages/creator/Settings"));
+
+// Brand Pages
+const BrandDashboard = React.lazy(() => import("@/pages/brand/Dashboard"));
+const DiscoverCreators = React.lazy(
+  () => import("@/pages/brand/DiscoverCreators"),
+);
+const BrandCampaigns = React.lazy(() => import("@/pages/brand/Campaigns"));
+const CreateCampaign = React.lazy(() => import("@/pages/brand/CreateCampaign"));
+const CampaignDetails = React.lazy(
+  () => import("@/pages/brand/CampaignDetails"),
+);
+const BrandAnalytics = React.lazy(() => import("@/pages/brand/Analytics"));
+const CreatorApplications = React.lazy(
+  () => import("@/pages/brand/CreatorApplications"),
+);
+const BrandPayments = React.lazy(() => import("@/pages/brand/Payments"));
+const BrandProfile = React.lazy(() => import("@/pages/brand/Profile"));
+const BrandSettings = React.lazy(() => import("@/pages/brand/Settings"));
+
+// Shared Pages
+const NotFoundPage = React.lazy(() => import("@/pages/NotFoundPage"));
+const NotificationsPage = React.lazy(() => import("@/pages/NotificationsPage"));
+
+// Admin Pages
+const AdminDashboard = React.lazy(() => import("@/pages/admin/Dashboard"));
+const UserManagement = React.lazy(() => import("@/pages/admin/UserManagement"));
+const PlatformAnalytics = React.lazy(
+  () => import("@/pages/admin/PlatformAnalytics"),
+);
+
 function App() {
   return (
-    // Theme Provider - Manages dark/light mode across the application
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem
-      disableTransitionOnChange={false}
-    >
-      {/* Authentication Provider - Manages user authentication state */}
+    <Router>
       <AuthProvider>
-        {/* Router Provider - Enables client-side routing */}
-        <Router>
-          <div className="App min-h-screen bg-background text-foreground">
-            {/* 
-              Suspense Wrapper - Shows loading state while lazy components load
-              {{Dynamic}} - Loading states can be customized based on route
-            */}
-            <Suspense fallback={<LoadingScreen />}>
-              <Routes>
-                {/* ===== PUBLIC ROUTES ===== */}
-                {/* These routes are accessible to all users regardless of authentication */}
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/case-studies" element={<CaseStudies />} />
-                <Route path="/case-study/:id" element={<CaseStudyDetail />} />
+        <div className="App min-h-screen bg-background">
+          <Suspense fallback={<AppLoader />}>
+            <Routes>
+              {/* Public Routes - accessible to non-authenticated users */}
+              <Route
+                path="/"
+                element={
+                  <PublicRoute>
+                    <LandingPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <PublicRoute>
+                    <AboutPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/pricing"
+                element={
+                  <PublicRoute>
+                    <PricingPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/contact"
+                element={
+                  <PublicRoute>
+                    <ContactPage />
+                  </PublicRoute>
+                }
+              />
 
-                {/* ===== AUTHENTICATION ROUTES ===== */}
-                {/* Public access for users to sign up and log in */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/otp-verification" element={<OTPVerification />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
+              {/* Authentication Routes */}
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <PublicRoute>
+                    <SignupPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/verify-otp"
+                element={
+                  <PublicRoute>
+                    <OTPVerificationPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/forgot-password"
+                element={
+                  <PublicRoute>
+                    <ForgotPasswordPage />
+                  </PublicRoute>
+                }
+              />
 
-                {/* ===== ONBOARDING ROUTES ===== */}
-                {/* 
-                  Special route that requires authentication but allows incomplete onboarding
-                  {{Dynamic}} - Onboarding steps can be configured based on user role
-                */}
-                <Route
-                  path="/onboarding"
-                  element={
-                    <OnboardingProtectedRoute
-                      allowedRoles={["creator", "brand"]}
-                      requireOnboarding={false}
-                    >
-                      <Onboarding />
-                    </OnboardingProtectedRoute>
-                  }
-                />
+              {/* Onboarding Route - requires authentication but allows incomplete onboarding */}
+              <Route
+                path="/onboarding"
+                element={
+                  <OnboardingProtectedRoute
+                    allowedRoles={["creator"]}
+                    requireOnboarding={false}
+                    allowIncompleteOnboarding={true}
+                  >
+                    <OnboardingPage />
+                  </OnboardingProtectedRoute>
+                }
+              />
 
-                {/* ===== CREATOR PROTECTED ROUTES ===== */}
-                {/* All creator routes require authentication AND completed onboarding */}
-                <Route
-                  path="/creator/dashboard"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <CreatorDashboard />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/discover-campaigns"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <DiscoverCampaigns />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/my-campaigns"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <MyCampaigns />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/reels"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <MyReels />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/earnings"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <CreatorEarnings />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/analytics"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <CreatorAnalytics />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/profile"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <CreatorProfile />
-                    </OnboardingProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/creator/settings"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <CreatorSettings />
-                    </OnboardingProtectedRoute>
-                  }
-                />
+              {/* Creator Routes - require completed onboarding */}
+              <Route
+                path="/creator/dashboard"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <CreatorDashboard />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/discover-campaigns"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <DiscoverCampaigns />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/my-campaigns"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <MyCampaigns />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/content"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <MyContent />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/earnings"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <CreatorEarnings />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/analytics"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <CreatorAnalytics />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/profile"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <CreatorProfile />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/creator/settings"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <CreatorSettings />
+                  </OnboardingProtectedRoute>
+                }
+              />
 
-                {/* ===== BRAND PROTECTED ROUTES ===== */}
-                {/* All brand routes require authentication and brand role */}
-                <Route
-                  path="/brand/dashboard"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/discover-creators"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <DiscoverCreators />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/campaigns"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandCampaigns />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/campaigns/new"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <NewCampaign />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/analytics"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandAnalytics />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/approvals"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandApprovals />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/payments"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandPayments />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/brand/settings"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <BrandSettings />
-                    </ProtectedRoute>
-                  }
-                />
+              {/* Brand Routes - require authentication */}
+              <Route
+                path="/brand/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/discover-creators"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <DiscoverCreators />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/campaigns"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandCampaigns />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/campaigns/create"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <CreateCampaign />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/campaigns/:campaignId"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <CampaignDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/analytics"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandAnalytics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/applications"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <CreatorApplications />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/payments"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandPayments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/profile"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/settings"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <BrandSettings />
+                  </ProtectedRoute>
+                }
+              />
 
-                {/* ===== CATCH-ALL ROUTES ===== */}
-                {/* 
-                  These routes catch unauthorized access attempts and redirect appropriately
-                  {{Dynamic}} - Could be enhanced with analytics tracking
-                */}
-                <Route
-                  path="/creator/*"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
-                      <NotFound />
-                    </OnboardingProtectedRoute>
-                  }
-                />
+              {/* Shared Authenticated Routes */}
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <NotificationsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-                <Route
-                  path="/brand/*"
-                  element={
-                    <ProtectedRoute allowedRoles={["brand"]}>
-                      <NotFound />
-                    </ProtectedRoute>
-                  }
-                />
+              {/* Admin Routes - super restricted */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminRoute>
+                    <UserManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <AdminRoute>
+                    <PlatformAnalytics />
+                  </AdminRoute>
+                }
+              />
 
-                {/* 404 fallback for all other routes */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+              {/* Catch-all for role-based redirects */}
+              <Route
+                path="/creator/*"
+                element={
+                  <OnboardingProtectedRoute allowedRoles={["creator"]}>
+                    <NotFoundPage />
+                  </OnboardingProtectedRoute>
+                }
+              />
+              <Route
+                path="/brand/*"
+                element={
+                  <ProtectedRoute allowedRoles={["brand"]}>
+                    <NotFoundPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <AdminRoute>
+                    <NotFoundPage />
+                  </AdminRoute>
+                }
+              />
 
-            {/* 
-              Global Toast Notifications
-              Shows success/error messages throughout the application
-              {{Dynamic}} - Can be enhanced with different toast types and positioning
-            */}
-            <Toaster />
-          </div>
-        </Router>
+              {/* 404 Route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+
+          {/* Global Toast Notifications */}
+          <Toaster position="top-right" richColors />
+        </div>
       </AuthProvider>
-    </ThemeProvider>
+    </Router>
   );
 }
 
 export default App;
+
+/**
+ * Backend Deployment and Configuration Notes:
+ *
+ * 1. Environment Variables:
+ *    - VITE_API_URL: Backend API base URL
+ *    - VITE_SENTRY_DSN: Error tracking
+ *    - VITE_GA_TRACKING_ID: Google Analytics
+ *    - VITE_STRIPE_PUBLISHABLE_KEY: Payment processing
+ *    - VITE_RAZORPAY_KEY_ID: Indian payment gateway
+ *
+ * 2. Build Configuration:
+ *    - Configure proper asset optimization
+ *    - Set up CDN for static assets
+ *    - Implement proper caching strategies
+ *    - Add service worker for offline capabilities
+ *
+ * 3. Security Headers:
+ *    - Content Security Policy (CSP)
+ *    - X-Frame-Options: DENY
+ *    - X-Content-Type-Options: nosniff
+ *    - Referrer-Policy: strict-origin-when-cross-origin
+ *
+ * 4. Performance Optimizations:
+ *    - Code splitting at route level (already implemented)
+ *    - Image optimization and lazy loading
+ *    - API response caching
+ *    - Bundle size optimization
+ *
+ * 5. Monitoring and Analytics:
+ *    - Real User Monitoring (RUM)
+ *    - Core Web Vitals tracking
+ *    - User behavior analytics
+ *    - Error rate monitoring
+ *
+ * 6. SEO and Meta Tags:
+ *    - Dynamic meta tags for social sharing
+ *    - Structured data for search engines
+ *    - Sitemap generation
+ *    - robots.txt configuration
+ */
