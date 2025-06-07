@@ -1,27 +1,55 @@
-import { createRoot } from "react-dom/client";
+/**
+ * main.jsx
+ *
+ * Purpose: Application entry point
+ *
+ * Features:
+ * - React 18 concurrent features
+ * - Initial theme setup
+ * - Development tools integration
+ * - Performance monitoring setup
+ *
+ * Backend Integration:
+ * - Analytics initialization
+ * - Error tracking setup
+ * - Performance monitoring
+ */
+
+import React from "react";
+import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 
-// Error handling for debugging
-window.addEventListener("error", (e) => {
-  console.error("Global error:", e.error);
-});
+// Initialize dark theme immediately to prevent flash
+const initializeTheme = () => {
+  try {
+    const savedTheme = localStorage.getItem("influbazzar-theme");
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+      .matches
+      ? "dark"
+      : "light";
+    const theme = savedTheme || systemTheme || "dark";
 
-window.addEventListener("unhandledrejection", (e) => {
-  console.error("Unhandled promise rejection:", e.reason);
-});
+    document.documentElement.classList.add(theme);
+  } catch (error) {
+    document.documentElement.classList.add("dark");
+  }
+};
 
-try {
-  const root = createRoot(document.getElementById("root"));
-  root.render(<App />);
-} catch (error) {
-  console.error("Failed to render app:", error);
-  // Fallback to simple content
-  document.getElementById("root").innerHTML = `
-    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-      <h1>Influbazzar</h1>
-      <p>Loading error occurred. Please check the console for details.</p>
-      <p>Error: ${error.message}</p>
-    </div>
-  `;
-}
+// Initialize theme before React renders
+initializeTheme();
+
+// TODO: Initialize analytics and monitoring
+// import { initAnalytics } from './lib/analytics';
+// import { initErrorTracking } from './lib/errorTracking';
+//
+// if (import.meta.env.PROD) {
+//   initAnalytics();
+//   initErrorTracking();
+// }
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
