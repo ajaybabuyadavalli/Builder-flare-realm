@@ -8,12 +8,11 @@ const Button = React.forwardRef(
       variant = "default",
       size = "default",
       asChild = false,
+      children,
       ...props
     },
     ref,
   ) => {
-    const Comp = asChild ? "span" : "button";
-
     const baseClasses =
       "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 
@@ -35,12 +34,21 @@ const Button = React.forwardRef(
       icon: "h-10 w-10",
     };
 
+    const classes = cn(baseClasses, variants[variant], sizes[size], className);
+
+    // Handle asChild prop properly
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        className: cn(classes, children.props.className),
+        ref,
+        ...props,
+      });
+    }
+
     return (
-      <Comp
-        className={cn(baseClasses, variants[variant], sizes[size], className)}
-        ref={ref}
-        {...props}
-      />
+      <button className={classes} ref={ref} {...props}>
+        {children}
+      </button>
     );
   },
 );
