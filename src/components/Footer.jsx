@@ -2,177 +2,290 @@ import React, { useState } from "react";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    alert("Newsletter subscription functionality will be connected to backend");
-    setEmail("");
+    setIsSubscribing(true);
+
+    // Simulate subscription
+    setTimeout(() => {
+      alert(
+        "Thank you for subscribing! You'll receive our latest updates soon.",
+      );
+      setEmail("");
+      setIsSubscribing(false);
+    }, 1000);
   };
 
+  const footerSections = {
+    product: {
+      title: "Product",
+      links: [
+        { name: "Features", href: "/#features" },
+        { name: "Pricing", href: "/pricing" },
+        { name: "Case Studies", href: "/case-studies" },
+        { name: "Creator Portal", href: "/creator/login" },
+        { name: "Brand Dashboard", href: "/brand/login" },
+      ],
+    },
+    company: {
+      title: "Company",
+      links: [
+        { name: "About Us", href: "/about" },
+        { name: "Careers", href: "/careers" },
+        { name: "Contact", href: "/contact" },
+        { name: "Blog", href: "/blog" },
+        { name: "Press Kit", href: "/press" },
+      ],
+    },
+    resources: {
+      title: "Resources",
+      links: [
+        { name: "Help Center", href: "/help" },
+        { name: "Creator Guide", href: "/creator-guide" },
+        { name: "Brand Guide", href: "/brand-guide" },
+        { name: "API Documentation", href: "/docs" },
+        { name: "Community", href: "/community" },
+      ],
+    },
+    legal: {
+      title: "Legal",
+      links: [
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Terms of Service", href: "/terms" },
+        { name: "Cookie Policy", href: "/cookies" },
+        { name: "GDPR", href: "/gdpr" },
+        { name: "Security", href: "/security" },
+      ],
+    },
+  };
+
+  const socialLinks = [
+    {
+      name: "Twitter",
+      href: "#",
+      icon: "🐦",
+      hoverColor: "hover:text-cyan-400 hover:bg-cyan-400/10",
+    },
+    {
+      name: "Instagram",
+      href: "#",
+      icon: "📷",
+      hoverColor: "hover:text-pink-400 hover:bg-pink-400/10",
+    },
+    {
+      name: "LinkedIn",
+      href: "#",
+      icon: "💼",
+      hoverColor: "hover:text-blue-400 hover:bg-blue-400/10",
+    },
+    {
+      name: "YouTube",
+      href: "#",
+      icon: "🎥",
+      hoverColor: "hover:text-red-400 hover:bg-red-400/10",
+    },
+    {
+      name: "Discord",
+      href: "#",
+      icon: "🎮",
+      hoverColor: "hover:text-purple-400 hover:bg-purple-400/10",
+    },
+  ];
+
   return (
-    <footer className="bg-gray-900 dark:bg-gray-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">IB</span>
+    <footer className="bg-gray-900 border-t border-gray-800">
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Company Info & Newsletter */}
+          <div className="lg:col-span-1">
+            {/* Logo and Description */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">IB</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl blur opacity-50 animate-pulse"></div>
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                  Influbazzar
+                </span>
               </div>
-              <span className="text-xl font-bold">Influbazzar</span>
+
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                India's leading influencer marketing platform connecting
+                authentic creators with premium brands. Build meaningful
+                partnerships that drive real results.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="text-center p-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50">
+                  <div className="text-2xl font-bold text-purple-400 mb-1">
+                    50K+
+                  </div>
+                  <div className="text-gray-400 text-sm">Creators</div>
+                </div>
+                <div className="text-center p-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50">
+                  <div className="text-2xl font-bold text-green-400 mb-1">
+                    ₹50Cr+
+                  </div>
+                  <div className="text-gray-400 text-sm">Earnings</div>
+                </div>
+              </div>
             </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              The ultimate platform connecting brands with content creators.
-              Discover campaigns, grow your audience, and monetize your content
-              effectively.
-            </p>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-purple-400 transition-colors"
-                aria-label="Twitter"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-purple-400 transition-colors"
-                aria-label="Instagram"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.017 0C8.396 0 7.929.013 6.71.073 5.493.133 4.691.333 3.999.63c-.706.306-1.305.717-1.901 1.313-.596.596-1.007 1.195-1.313 1.901-.297.692-.497 1.494-.557 2.711C.013 7.929 0 8.396 0 12.017s.013 4.088.073 5.307c.06 1.217.26 2.019.557 2.711.306.706.717 1.305 1.313 1.901.596.596 1.195 1.007 1.901 1.313.692.297 1.494.497 2.711.557 1.219.06 1.686.073 5.307.073s4.088-.013 5.307-.073c1.217-.06 2.019-.26 2.711-.557.706-.306 1.305-.717 1.901-1.313.596-.596 1.007-1.195 1.313-1.901.297-.692.497-1.494.557-2.711.06-1.219.073-1.686.073-5.307s-.013-4.088-.073-5.307c-.06-1.217-.26-2.019-.557-2.711-.306-.706-.717-1.305-1.313-1.901-.596-.596-1.195-1.007-1.901-1.313-.692-.297-1.494-.497-2.711-.557C16.105.013 15.638 0 12.017 0zm0 2.167c3.555 0 3.978.013 5.381.073.884.013 1.361.061 1.68.102.421.102.72.221 1.034.408.314.187.582.432.769.747.187.314.306.613.408 1.034.041.319.089.796.102 1.68.06 1.403.073 1.826.073 5.381s-.013 3.978-.073 5.381c-.013.884-.061 1.361-.102 1.68-.102.421-.221.72-.408 1.034-.187.314-.432.582-.747.769-.314.187-.613.306-1.034.408-.319.041-.796.089-1.68.102-1.403.06-1.826.073-5.381.073s-3.978-.013-5.381-.073c-.884-.013-1.361-.061-1.68-.102-.421-.102-.72-.221-1.034-.408-.314-.187-.582-.432-.769-.747-.187-.314-.306-.613-.408-1.034-.041-.319-.089-.796-.102-1.68-.06-1.403-.073-1.826-.073-5.381s.013-3.978.073-5.381c.013-.884.061-1.361.102-1.68.102-.421.221-.72.408-1.034.187-.314.432-.582.747-.769.314-.187.613-.306 1.034-.408.319-.041.796-.089 1.68-.102 1.403-.06 1.826-.073 5.381-.073z"
-                    clipRule="evenodd"
+
+            {/* Newsletter Signup */}
+            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Stay{" "}
+                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Updated
+                </span>
+              </h3>
+              <p className="text-gray-400 mb-4 text-sm">
+                Get the latest insights, success stories, and exclusive
+                opportunities.
+              </p>
+
+              <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                    required
                   />
-                  <path
-                    fillRule="evenodd"
-                    d="M12.017 7.781c-2.34 0-4.236 1.896-4.236 4.236 0 2.34 1.896 4.236 4.236 4.236 2.34 0 4.236-1.896 4.236-4.236 0-2.34-1.896-4.236-4.236-4.236zm0 6.985c-1.518 0-2.749-1.231-2.749-2.749s1.231-2.749 2.749-2.749 2.749 1.231 2.749 2.749-1.231 2.749-2.749 2.749zm4.388-7.149c-.549 0-.994-.445-.994-.994s.445-.994.994-.994.994.445.994.994-.445.994-.994.994z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-purple-400 transition-colors"
-                aria-label="LinkedIn"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-gray-400">📧</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubscribing}
+                  className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 ${
+                    isSubscribing
+                      ? "bg-gray-600 cursor-not-allowed"
+                      : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg hover:shadow-purple-500/25"
+                  } text-white`}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </a>
+                  {isSubscribing ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Subscribing...
+                    </div>
+                  ) : (
+                    "Subscribe →"
+                  )}
+                </button>
+              </form>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="/about"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/pricing"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/case-studies"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Case Studies
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/contact"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              Get the latest updates and exclusive offers.
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 Influbazzar. All rights reserved.
-            </p>
-            <div className="mt-4 md:mt-0 flex space-x-6">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Cookie Policy
-              </a>
+          {/* Links Sections */}
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {Object.entries(footerSections).map(([key, section]) => (
+                <div key={key}>
+                  <h3 className="text-lg font-semibold text-white mb-6">
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-3">
+                    {section.links.map((link) => (
+                      <li key={link.name}>
+                        <a
+                          href={link.href}
+                          className="group text-gray-400 hover:text-white transition-all duration-300 text-sm relative"
+                        >
+                          <span className="relative z-10">{link.name}</span>
+                          <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 group-hover:w-full transition-all duration-300"></div>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Bottom Footer */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+            {/* Copyright */}
+            <div className="text-center md:text-left">
+              <p className="text-gray-400 text-sm">
+                © 2024 Influbazzar. All rights reserved.
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                Made with ❤️ in India 🇮🇳
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-400 text-sm font-medium">
+                Follow us:
+              </span>
+              <div className="flex space-x-3">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    className={`group w-10 h-10 rounded-xl bg-gray-800/50 border border-gray-700/50 flex items-center justify-center text-gray-400 transition-all duration-300 hover:scale-110 hover:border-gray-600 ${social.hoverColor}`}
+                    aria-label={social.name}
+                  >
+                    <span className="text-lg group-hover:scale-110 transition-transform duration-300">
+                      {social.icon}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Additional Links */}
+            <div className="flex items-center space-x-6 text-sm">
+              <a
+                href="/status"
+                className="flex items-center text-gray-400 hover:text-green-400 transition-colors group"
+              >
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                <span className="group-hover:underline">System Status</span>
+              </a>
+
+              <a
+                href="/api"
+                className="text-gray-400 hover:text-blue-400 transition-colors hover:underline"
+              >
+                API
+              </a>
+
+              <a
+                href="/help"
+                className="text-gray-400 hover:text-purple-400 transition-colors hover:underline"
+              >
+                Help
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button className="group w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-2xl shadow-purple-500/25 flex items-center justify-center text-white hover:scale-110 transition-all duration-300 hover:shadow-purple-500/40">
+          <span className="text-xl group-hover:scale-110 transition-transform duration-300">
+            💬
+          </span>
+        </button>
       </div>
     </footer>
   );
