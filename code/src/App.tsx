@@ -8,6 +8,7 @@ import {
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute";
 import { LoadingScreen } from "./components/ui/loading";
 
 // Public pages
@@ -76,12 +77,21 @@ function App() {
                 <Route
                   path="/creator/dashboard"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={['creator']}>
                       <CreatorDashboard />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
+
+                {/* Onboarding route - special handling */}
                 <Route
+                  path="/onboarding"
+                  element={
+                    <OnboardingProtectedRoute allowedRoles={['creator']} requireOnboarding={false}>
+                      <Onboarding />
+                    </OnboardingProtectedRoute>
+                  }
+                />
                   path="/creator/discover-campaigns"
                   element={
                     <ProtectedRoute allowedRoles={["creator"]}>
