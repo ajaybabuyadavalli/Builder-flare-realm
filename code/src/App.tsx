@@ -20,6 +20,8 @@ const CaseStudies = lazy(() => import("./pages/CaseStudies"));
 const CaseStudyDetail = lazy(() => import("./pages/CaseStudyDetail"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
+const OTPVerification = lazy(() => import("./pages/OTPVerification"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Creator pages
@@ -63,6 +65,8 @@ function App() {
                 <Route path="/case-study/:id" element={<CaseStudyDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/otp-verification" element={<OTPVerification />} />
+                <Route path="/onboarding" element={<Onboarding />} />
 
                 {/* Creator authentication routes (public) */}
                 <Route path="/creator/login" element={<CreatorLogin />} />
