@@ -1,12 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { LoadingScreen } from "./ui/loading-simple";
-
-interface ProtectedRouteProps {
-  children: any;
-  allowedRoles: string[];
-  redirectTo?: string;
-}
 
 /**
  * ProtectedRoute Component
@@ -31,7 +24,14 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo }) => {
 
   // Show loading screen while checking authentication
   if (isLoading) {
-    return <LoadingScreen text="Checking authentication..." />;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 w-8 h-8 mx-auto" />
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
   }
 
   // Not authenticated - redirect to login with return URL
@@ -54,8 +54,7 @@ const ProtectedRoute = ({ children, allowedRoles, redirectTo }) => {
       admin: "/admin/dashboard",
     };
 
-    const userDashboard =
-      roleDashboards[user.role as keyof typeof roleDashboards];
+    const userDashboard = roleDashboards[user.role];
 
     if (userDashboard) {
       return <Navigate to={userDashboard} replace />;
