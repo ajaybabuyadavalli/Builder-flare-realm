@@ -1,7 +1,4 @@
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -48,45 +45,35 @@ const App = () => (
         enableSystem
         disableTransitionOnChange
       >
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/case-studies" element={<CaseStudies />} />
+        <BrowserRouter>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/case-studies" element={<CaseStudies />} />
 
-                {/* Creator Routes */}
-                <Route path="/creator/login" element={<CreatorLogin />} />
-                <Route path="/creator/signup" element={<CreatorSignup />} />
-                <Route
-                  path="/creator/dashboard"
-                  element={<CreatorDashboard />}
-                />
-                <Route
-                  path="/creator/discover-campaigns"
-                  element={<DiscoverCampaigns />}
-                />
-                <Route path="/creator/my-campaigns" element={<MyCampaigns />} />
-                <Route path="/creator/profile" element={<CreatorProfile />} />
-                <Route path="/creator/earnings" element={<CreatorEarnings />} />
-                <Route
-                  path="/creator/analytics"
-                  element={<CreatorAnalytics />}
-                />
-                <Route path="/creator/support" element={<CreatorSupport />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
+              {/* Creator Routes */}
+              <Route path="/creator/login" element={<CreatorLogin />} />
+              <Route path="/creator/signup" element={<CreatorSignup />} />
+              <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+              <Route
+                path="/creator/discover-campaigns"
+                element={<DiscoverCampaigns />}
+              />
+              <Route path="/creator/my-campaigns" element={<MyCampaigns />} />
+              <Route path="/creator/profile" element={<CreatorProfile />} />
+              <Route path="/creator/earnings" element={<CreatorEarnings />} />
+              <Route path="/creator/analytics" element={<CreatorAnalytics />} />
+              <Route path="/creator/support" element={<CreatorSupport />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
