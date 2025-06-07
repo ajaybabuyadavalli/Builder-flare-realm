@@ -20,12 +20,11 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["react-router-dom"],
-          ui: [
+          radixui: [
             "@radix-ui/react-accordion",
             "@radix-ui/react-alert-dialog",
             "@radix-ui/react-avatar",
-            "@radix-ui/react-button",
-            "@radix-ui/react-card",
+            "@radix-ui/react-slot",
           ],
           animations: ["framer-motion"],
           query: ["@tanstack/react-query"],
