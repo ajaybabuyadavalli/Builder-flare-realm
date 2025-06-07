@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { LoadingScreen } from "@/components/ui/loading";
+import { useAuth } from "../contexts/AuthContext";
+import { LoadingScreen } from "./ui/loading";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,6 +9,23 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
+/**
+ * ProtectedRoute Component
+ *
+ * Provides role-based access control for authenticated routes.
+ * This component ensures users can only access routes that match their role.
+ *
+ * Features:
+ * - Authentication verification
+ * - Role-based access control
+ * - Automatic redirection to appropriate dashboards
+ * - Loading state management
+ *
+ * Usage:
+ * <ProtectedRoute allowedRoles={["brand"]}>
+ *   <BrandDashboard />
+ * </ProtectedRoute>
+ */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,

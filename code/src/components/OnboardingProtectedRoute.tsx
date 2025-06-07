@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { LoadingScreen } from "@/components/ui/loading";
+import { useAuth } from "../contexts/AuthContext";
+import { LoadingScreen } from "./ui/loading";
 
 interface OnboardingProtectedRouteProps {
   children: React.ReactNode;
@@ -9,6 +9,29 @@ interface OnboardingProtectedRouteProps {
   requireOnboarding?: boolean;
 }
 
+/**
+ * OnboardingProtectedRoute Component
+ *
+ * Enhanced protection that includes onboarding completion checks.
+ * This component ensures users complete their onboarding before accessing
+ * main application features.
+ *
+ * Features:
+ * - All ProtectedRoute features
+ * - Onboarding completion verification
+ * - Automatic redirection to onboarding flow
+ * - Flexible onboarding requirement control
+ *
+ * Backend Integration Notes:
+ * - onboarding_completed field should be stored in user profile {{Dynamic}}
+ * - Track onboarding progress in separate onboarding_steps table {{Dynamic}}
+ * - API endpoint: GET /api/user/onboarding-status {{Dynamic}}
+ *
+ * Usage:
+ * <OnboardingProtectedRoute allowedRoles={["creator"]} requireOnboarding={true}>
+ *   <CreatorDashboard />
+ * </OnboardingProtectedRoute>
+ */
 const OnboardingProtectedRoute: React.FC<OnboardingProtectedRouteProps> = ({
   children,
   allowedRoles,
