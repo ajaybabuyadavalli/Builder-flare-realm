@@ -1,82 +1,92 @@
-import { Suspense, lazy } from "react";
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Lazy load pages for better performance
-const Index = lazy(() => import("./pages/WorkingIndex"));
-const Login = lazy(() => import("./pages/SimpleLogin"));
-const Signup = lazy(() => import("./pages/SimpleSignup"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const CaseStudies = lazy(() => import("./pages/CaseStudies"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Import pages directly (no lazy loading to fix spinner issue)
+import WorkingIndex from "./pages/WorkingIndex";
+import SimpleLogin from "./pages/SimpleLogin";
+import SimpleSignup from "./pages/SimpleSignup";
+import SimpleAbout from "./pages/SimpleAbout";
+import SimplePricing from "./pages/SimplePricing";
+import SimpleCaseStudies from "./pages/SimpleCaseStudies";
+import SimpleContact from "./pages/SimpleContact";
+import SimpleNotFound from "./pages/SimpleNotFound";
 
-// Creator Pages
-const CreatorLogin = lazy(() => import("./pages/creator/Login"));
-const CreatorSignup = lazy(() => import("./pages/creator/Signup"));
-const CreatorDashboard = lazy(() => import("./pages/creator/Dashboard"));
-const DiscoverCampaigns = lazy(
-  () => import("./pages/creator/DiscoverCampaigns"),
-);
-const MyCampaigns = lazy(() => import("./pages/creator/MyCampaigns"));
-const CreatorProfile = lazy(() => import("./pages/creator/Profile"));
-const CreatorEarnings = lazy(() => import("./pages/creator/Earnings"));
-const CreatorAnalytics = lazy(() => import("./pages/creator/Analytics"));
-const CreatorSupport = lazy(() => import("./pages/creator/Support"));
-
-// Loading component
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-  </div>
-);
+// Creator Pages - Import directly
+import SimpleCreatorLogin from "./pages/creator/SimpleCreatorLogin";
+import SimpleCreatorSignup from "./pages/creator/SimpleCreatorSignup";
+import SimpleCreatorDashboard from "./pages/creator/SimpleCreatorDashboard";
+import SimpleDiscoverCampaigns from "./pages/creator/SimpleDiscoverCampaigns";
+import SimpleMyCampaigns from "./pages/creator/SimpleMyCampaigns";
+import SimpleCreatorProfile from "./pages/creator/SimpleCreatorProfile";
+import SimpleCreatorEarnings from "./pages/creator/SimpleCreatorEarnings";
+import SimpleCreatorAnalytics from "./pages/creator/SimpleCreatorAnalytics";
+import SimpleCreatorSupport from "./pages/creator/SimpleCreatorSupport";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <BrowserRouter>
-          <Suspense fallback={<LoadingSpinner />}>
+const App = () => {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/case-studies" element={<CaseStudies />} />
+              <Route path="/" element={<WorkingIndex />} />
+              <Route path="/login" element={<SimpleLogin />} />
+              <Route path="/signup" element={<SimpleSignup />} />
+              <Route path="/about" element={<SimpleAbout />} />
+              <Route path="/pricing" element={<SimplePricing />} />
+              <Route path="/case-studies" element={<SimpleCaseStudies />} />
+              <Route path="/contact" element={<SimpleContact />} />
 
               {/* Creator Routes */}
-              <Route path="/creator/login" element={<CreatorLogin />} />
-              <Route path="/creator/signup" element={<CreatorSignup />} />
-              <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+              <Route path="/creator/login" element={<SimpleCreatorLogin />} />
+              <Route path="/creator/signup" element={<SimpleCreatorSignup />} />
+              <Route
+                path="/creator/dashboard"
+                element={<SimpleCreatorDashboard />}
+              />
               <Route
                 path="/creator/discover-campaigns"
-                element={<DiscoverCampaigns />}
+                element={<SimpleDiscoverCampaigns />}
               />
-              <Route path="/creator/my-campaigns" element={<MyCampaigns />} />
-              <Route path="/creator/profile" element={<CreatorProfile />} />
-              <Route path="/creator/earnings" element={<CreatorEarnings />} />
-              <Route path="/creator/analytics" element={<CreatorAnalytics />} />
-              <Route path="/creator/support" element={<CreatorSupport />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              <Route
+                path="/creator/my-campaigns"
+                element={<SimpleMyCampaigns />}
+              />
+              <Route
+                path="/creator/profile"
+                element={<SimpleCreatorProfile />}
+              />
+              <Route
+                path="/creator/earnings"
+                element={<SimpleCreatorEarnings />}
+              />
+              <Route
+                path="/creator/analytics"
+                element={<SimpleCreatorAnalytics />}
+              />
+              <Route
+                path="/creator/support"
+                element={<SimpleCreatorSupport />}
+              />
+
+              {/* Catch all route */}
+              <Route path="*" element={<SimpleNotFound />} />
             </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+          </BrowserRouter>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;
