@@ -1,0 +1,28 @@
+{
+  "name": "Influbazzar - Connect Brands with Creators",
+  "short_name": "Influbazzar",
+  "description": "Premium influencer collaboration marketplace connecting brands, creators, and agencies. Built for Bharat, empowering D2C brands and content creators.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#9333ea",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "marketing", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}
