@@ -4,7 +4,15 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute";
-import { LoadingScreen } from "./components/ui/loading-simple";
+// Simple inline loading component
+const SimpleLoading = () => (
+  <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="text-center space-y-4">
+      <div className="animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 w-8 h-8 mx-auto" />
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 // Public pages
 const Index = lazy(() => import("./pages/Index"));
@@ -49,7 +57,7 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-            <Suspense fallback={<LoadingScreen />}>
+            <Suspense fallback={<SimpleLoading />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
