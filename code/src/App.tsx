@@ -1,10 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -67,84 +62,87 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/otp-verification" element={<OTPVerification />} />
-                <Route path="/onboarding" element={<Onboarding />} />
+
+                {/* Onboarding route - requires authentication but allows incomplete onboarding */}
+                <Route
+                  path="/onboarding"
+                  element={
+                    <OnboardingProtectedRoute
+                      allowedRoles={["creator"]}
+                      requireOnboarding={false}
+                    >
+                      <Onboarding />
+                    </OnboardingProtectedRoute>
+                  }
+                />
 
                 {/* Creator authentication routes (public) */}
                 <Route path="/creator/login" element={<CreatorLogin />} />
                 <Route path="/creator/signup" element={<CreatorSignup />} />
 
-                {/* Protected Creator routes */}
+                {/* Protected Creator routes - require onboarding completion */}
                 <Route
                   path="/creator/dashboard"
                   element={
-                    <OnboardingProtectedRoute allowedRoles={['creator']}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <CreatorDashboard />
                     </OnboardingProtectedRoute>
                   }
                 />
-
-                {/* Onboarding route - special handling */}
                 <Route
-                  path="/onboarding"
-                  element={
-                    <OnboardingProtectedRoute allowedRoles={['creator']} requireOnboarding={false}>
-                      <Onboarding />
-                    </OnboardingProtectedRoute>
-                  }
-                />
                   path="/creator/discover-campaigns"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <DiscoverCampaigns />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/my-campaigns"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <MyCampaigns />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/reels"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <MyReels />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/earnings"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <CreatorEarnings />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/analytics"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <CreatorAnalytics />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/profile"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <CreatorProfile />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
                 <Route
                   path="/creator/support"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <CreatorSupport />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
 
@@ -198,9 +196,9 @@ function App() {
                 <Route
                   path="/creator/*"
                   element={
-                    <ProtectedRoute allowedRoles={["creator"]}>
+                    <OnboardingProtectedRoute allowedRoles={["creator"]}>
                       <NotFound />
-                    </ProtectedRoute>
+                    </OnboardingProtectedRoute>
                   }
                 />
 
