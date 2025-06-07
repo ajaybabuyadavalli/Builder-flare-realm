@@ -1,30 +1,3 @@
-/**
- * Authentication Context Provider
- *
- * This context manages the global authentication state for the application.
- * It handles user login, logout, session persistence, and role-based access control.
- *
- * Key Features:
- * - JWT token management (ready for backend integration)
- * - User session persistence across browser sessions
- * - Role-based access control (Creator, Brand, Agency, Admin)
- * - Onboarding flow tracking
- * - Auto-logout on token expiration
- *
- * Backend Integration Points:
- * {{Dynamic}} - Replace demo authentication with real API calls
- * {{Dynamic}} - JWT token refresh mechanism
- * {{Dynamic}} - User profile data fetching
- * {{Dynamic}} - Role permissions from backend
- *
- * API Endpoints Expected:
- * - POST /api/auth/login
- * - POST /api/auth/logout
- * - POST /api/auth/refresh
- * - GET /api/auth/me
- * - POST /api/auth/verify-email
- */
-
 import React, {
   createContext,
   useContext,
@@ -32,125 +5,77 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-
-// ===== TYPE DEFINITIONS =====
-
-/**
- * User Interface Definition
- *
- * Represents the authenticated user object
- * {{Dynamic}} - Extend this interface based on your backend user model
- */
-interface User {
-  id: string; // Unique user identifier from backend
-  name: string; // User's display name
-  email: string; // User's email address (unique)
-  role: UserRole; // User's role for access control
-  avatar?: string; // Profile picture URL (optional)
-  isEmailVerified: boolean; // Email verification status
-
-  // Creator-specific fields
-  followers?: string; // Follower count (e.g., "45K")
-  influbazzarScore?: number; // Platform-specific scoring (0-100)
-
-  // Brand-specific fields
-  company?: string; // Company name for brand users
-  website?: string; // Company website URL
-  industry?: string; // Business industry category
-  companySize?: string; // Company size range
-
-  // Metadata
-  createdAt: string; // Account creation timestamp
-  lastLoginAt?: string; // Last login timestamp
-  onboardingCompleted: boolean; // Onboarding completion status
-}
+import { User, UserRole } from "@/types";
+import { api } from "@/api";
+import { storage } from "@/lib/utils";
 
 /**
- * User Role Enumeration
+ * Authentication Context for Influbazzar Platform
  *
- * Defines the different types of users in the system
- * {{Dynamic}} - Add new roles as needed (e.g., 'moderator', 'super-admin')
+ * This context manages user authentication state, login/logout functionality,
+ * and provides user data throughout the application.
+ *
+ * Backend Integration Notes:
+ *
+ * 1. JWT Token Management:
+ *    - Implement secure token storage (consider HttpOnly cookies)
+ *    - Add automatic token refresh logic
+ *    - Handle token expiration gracefully
+ *
+ * 2. Session Management:
+ *    - Track user sessions for security
+ *    - Implement concurrent session limits
+ *    - Add device management features
+ *
+ * 3. Security Features:
+ *    - Implement account lockout after failed attempts
+ *    - Add two-factor authentication support
+ *    - Log security events for monitoring
+ *
+ * 4. User State Synchronization:
+ *    - Real-time user data updates via WebSocket
+ *    - Cross-tab synchronization
+ *    - Handle profile updates from other devices
  */
-type UserRole = "creator" | "brand" | "agency" | "admin";
 
-/**
- * Authentication Context Interface
- *
- * Defines all authentication-related functions and state
- */
 interface AuthContextType {
-  // State
-  user: User | null; // Current authenticated user
-  isAuthenticated: boolean; // Authentication status
-  isLoading: boolean; // Loading state for auth operations
-  token: string | null; // JWT access token
+  // User state
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 
-  // Actions
-  login: (email: string, password: string) => Promise<LoginResult>;
+  // Authentication actions
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (userData: RegisterData) => Promise<RegisterResult>;
+  signup: (userData: SignupData) => Promise<void>;
+  verifyOTP: (phone: string, otp: string) => Promise<void>;
+
+  // User management
   updateUser: (userData: Partial<User>) => void;
-  refreshToken: () => Promise<boolean>;
+  refreshUser: () => Promise<void>;
 
-  // Utility functions
-  hasCompletedOnboarding: (userEmail: string) => boolean;
-  hasPermission: (permission: string) => boolean;
-  isTokenExpired: () => boolean;
+  // Onboarding management
+  hasCompletedOnboarding: () => boolean;
+  completeOnboarding: (onboardingData: any) => Promise<void>;
+
+  // Role checking utilities
+  hasRole: (role: UserRole) => boolean;
+  isCreator: () => boolean;
+  isBrand: () => boolean;
+  isAdmin: () => boolean;
 }
 
-/**
- * Login Result Interface
- *
- * Standardized response structure for login operations
- */
-interface LoginResult {
-  success: boolean;
-  user?: User;
-  token?: string;
-  refreshToken?: string;
-  error?: string;
-  requiresEmailVerification?: boolean;
-  requiresOnboarding?: boolean;
-}
-
-/**
- * Registration Data Interface
- *
- * Data structure for user registration
- */
-interface RegisterData {
+interface SignupData {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  phoneNumber: string;
+  phone: string;
   dateOfBirth: string;
-  role: UserRole;
-  agreeToTerms: boolean;
 }
-
-/**
- * Registration Result Interface
- *
- * Standardized response structure for registration operations
- */
-interface RegisterResult {
-  success: boolean;
-  user?: User;
-  error?: string;
-  requiresEmailVerification?: boolean;
-}
-
-// ===== CONTEXT CREATION =====
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * Authentication Hook
- *
- * Custom hook to access authentication context
- * Throws error if used outside AuthProvider
- */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -159,120 +84,48 @@ export const useAuth = () => {
   return context;
 };
 
-// ===== DEMO DATA =====
-/**
- * Demo Users Database
- *
- * {{Dynamic}} - Remove this in production and replace with real API calls
- * This is used for development and testing purposes only
- */
-const demoUsers: Record<string, User> = {
-  "creator@demo.com": {
-    id: "creator-001",
-    name: "Ajay Kumar",
-    email: "creator@demo.com",
-    role: "creator",
-    avatar: "/api/placeholder/100/100",
-    followers: "45K",
-    influbazzarScore: 84,
-    isEmailVerified: true,
-    createdAt: "2024-01-15T10:30:00Z",
-    lastLoginAt: "2024-01-20T09:15:00Z",
-    onboardingCompleted: true,
-  },
-  "brand@demo.com": {
-    id: "brand-001",
-    name: "Srinivas Reddy",
-    email: "brand@demo.com",
-    role: "brand",
-    avatar: "/api/placeholder/100/100",
-    company: "GlowCo Beauty",
-    website: "https://glowco.in",
-    industry: "Beauty & Skincare",
-    companySize: "50-100",
-    isEmailVerified: true,
-    createdAt: "2024-01-10T14:20:00Z",
-    lastLoginAt: "2024-01-20T11:45:00Z",
-    onboardingCompleted: true,
-  },
-  "agency@demo.com": {
-    id: "agency-001",
-    name: "Raj Patel",
-    email: "agency@demo.com",
-    role: "agency",
-    avatar: "/api/placeholder/100/100",
-    company: "Creative Minds Agency",
-    website: "https://creativeminds.co",
-    industry: "Marketing Agency",
-    companySize: "20-50",
-    isEmailVerified: true,
-    createdAt: "2024-01-05T16:00:00Z",
-    lastLoginAt: "2024-01-19T13:30:00Z",
-    onboardingCompleted: true,
-  },
-};
-
-// ===== PROVIDER COMPONENT =====
-
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-/**
- * Authentication Provider Component
- *
- * Wraps the application and provides authentication context to all child components
- */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // ===== STATE MANAGEMENT =====
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
-
-  // ===== STORAGE KEYS =====
-  const STORAGE_KEYS = {
-    USER: "influbazzar_user",
-    TOKEN: "influbazzar_token",
-    REFRESH_TOKEN: "influbazzar_refresh_token",
-    AUTHENTICATED: "influbazzar_authenticated",
-  } as const;
-
-  // ===== INITIALIZATION =====
 
   /**
-   * Initialize Authentication State
+   * Initialize authentication state on app load
    *
-   * Checks for existing authentication data in localStorage
-   * and restores user session if valid
+   * Backend Integration:
+   * - Verify stored token validity
+   * - Refresh user data from server
+   * - Handle token refresh if needed
    */
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        setIsLoading(true);
+        const storedToken = storage.get("influbazzar_token");
+        const storedUser = storage.get("influbazzar_user");
 
-        // Check for stored authentication data
-        const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
-        const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
-        const storedAuth = localStorage.getItem(STORAGE_KEYS.AUTHENTICATED);
-
-        if (storedUser && storedToken && storedAuth === "true") {
-          const userData = JSON.parse(storedUser);
-
-          // {{Dynamic}} - In production, verify token with backend
-          // const isValidToken = await verifyTokenWithBackend(storedToken);
-
-          // For demo purposes, assume token is valid
-          setUser(userData);
-          setToken(storedToken);
-          setIsAuthenticated(true);
-
-          console.log("🔐 User session restored:", userData.email);
+        if (storedToken && storedUser) {
+          // Verify token with backend
+          try {
+            const response = await api.getProfile();
+            if (response.success && response.data) {
+              setUser(response.data);
+              setIsAuthenticated(true);
+            } else {
+              // Invalid token, clear storage
+              clearAuthData();
+            }
+          } catch (error) {
+            console.error("Token verification failed:", error);
+            clearAuthData();
+          }
         }
       } catch (error) {
-        console.error("❌ Error initializing auth:", error);
-        // Clear invalid stored data
-        clearStoredAuthData();
+        console.error("Auth initialization error:", error);
+        clearAuthData();
       } finally {
         setIsLoading(false);
       }
@@ -281,328 +134,329 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // ===== UTILITY FUNCTIONS =====
-
   /**
-   * Clear Stored Authentication Data
-   *
-   * Removes all authentication-related data from localStorage
+   * Clear authentication data from state and storage
    */
-  const clearStoredAuthData = () => {
-    Object.values(STORAGE_KEYS).forEach((key) => {
-      localStorage.removeItem(key);
-    });
+  const clearAuthData = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    storage.remove("influbazzar_token");
+    storage.remove("influbazzar_user");
+    storage.remove("influbazzar_onboarding_data");
   };
 
   /**
-   * Store Authentication Data
+   * Login function
    *
-   * Saves authentication data to localStorage for session persistence
+   * Backend Integration:
+   * - POST /api/auth/login
+   * - Return JWT token and user data
+   * - Log security events (successful/failed login attempts)
+   * - Track device information for security
    */
-  const storeAuthData = (
-    userData: User,
-    accessToken: string,
-    refreshToken?: string,
-  ) => {
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
-    localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEYS.AUTHENTICATED, "true");
-
-    if (refreshToken) {
-      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    }
-  };
-
-  // ===== AUTHENTICATION FUNCTIONS =====
-
-  /**
-   * Login Function
-   *
-   * Authenticates user with email and password
-   * {{Dynamic}} - Replace with real API call to your backend
-   *
-   * Backend API Call:
-   * POST /api/auth/login
-   * Body: { email, password }
-   * Response: { user, accessToken, refreshToken }
-   */
-  const login = async (
-    email: string,
-    password: string,
-  ): Promise<LoginResult> => {
+  const login = async (email: string, password: string): Promise<void> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
+      const response = await api.login(email, password);
 
-      // {{Dynamic}} - Replace with real API call
-      console.log("🔐 Attempting login for:", email);
+      if (response.success && response.data) {
+        const { user: userData, token } = response.data;
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Demo authentication logic
-      const demoUser = demoUsers[email];
-
-      if (demoUser && password === "password123") {
-        const accessToken = `demo_token_${Date.now()}`;
-        const refreshToken = `demo_refresh_${Date.now()}`;
-
-        // Update user with current login time
-        const updatedUser = {
-          ...demoUser,
-          lastLoginAt: new Date().toISOString(),
-        };
+        // Store authentication data
+        storage.set("influbazzar_token", token);
+        storage.set("influbazzar_user", userData);
 
         // Update state
-        setUser(updatedUser);
-        setToken(accessToken);
+        setUser(userData);
         setIsAuthenticated(true);
 
-        // Persist to localStorage
-        storeAuthData(updatedUser, accessToken, refreshToken);
-
-        console.log("✅ Login successful for:", email);
-
-        return {
-          success: true,
-          user: updatedUser,
-          token: accessToken,
-          refreshToken: refreshToken,
-          requiresOnboarding: !updatedUser.onboardingCompleted,
-        };
+        console.log("Login successful for user:", userData.email);
+      } else {
+        throw new Error(response.message || "Login failed");
       }
-
-      console.log("❌ Login failed: Invalid credentials");
-      return {
-        success: false,
-        error: "Invalid email or password",
-      };
     } catch (error) {
-      console.error("❌ Login error:", error);
-      return {
-        success: false,
-        error: "An unexpected error occurred during login",
-      };
+      console.error("Login error:", error);
+      clearAuthData();
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Registration Function
+   * Signup function
    *
-   * Creates new user account
-   * {{Dynamic}} - Replace with real API call to your backend
-   *
-   * Backend API Call:
-   * POST /api/auth/register
-   * Body: RegisterData
-   * Response: { user, requiresEmailVerification }
+   * Backend Integration:
+   * - POST /api/auth/signup
+   * - Send OTP to phone number
+   * - Store temporary signup data
+   * - Implement rate limiting for signup attempts
    */
-  const register = async (userData: RegisterData): Promise<RegisterResult> => {
+  const signup = async (userData: SignupData): Promise<void> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
+      const response = await api.signup(userData);
 
-      console.log("📝 Attempting registration for:", userData.email);
-
-      // {{Dynamic}} - Replace with real API call
-      // const response = await api.post('/api/auth/register', userData);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Demo registration logic
-      if (demoUsers[userData.email]) {
-        return {
-          success: false,
-          error: "Email already registered",
-        };
+      if (response.success) {
+        // Store signup data temporarily for OTP verification
+        storage.set("influbazzar_signup_data", userData);
+        console.log("Signup successful, OTP sent to:", userData.phone);
+      } else {
+        throw new Error(response.message || "Signup failed");
       }
-
-      // Create new user object
-      const newUser: User = {
-        id: `user-${Date.now()}`,
-        name: `${userData.firstName} ${userData.lastName}`,
-        email: userData.email,
-        role: userData.role,
-        isEmailVerified: false, // Requires email verification
-        createdAt: new Date().toISOString(),
-        onboardingCompleted: false,
-      };
-
-      console.log("✅ Registration successful for:", userData.email);
-
-      return {
-        success: true,
-        user: newUser,
-        requiresEmailVerification: true,
-      };
     } catch (error) {
-      console.error("❌ Registration error:", error);
-      return {
-        success: false,
-        error: "An unexpected error occurred during registration",
-      };
+      console.error("Signup error:", error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Logout Function
+   * OTP verification function
    *
-   * Clears user session and authentication data
-   * {{Dynamic}} - Should notify backend to invalidate tokens
+   * Backend Integration:
+   * - POST /api/auth/verify-otp
+   * - Complete user registration
+   * - Return JWT token
+   * - Clean up temporary signup data
+   */
+  const verifyOTP = async (phone: string, otp: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const response = await api.verifyOTP(phone, otp);
+
+      if (response.success && response.data) {
+        const { user: userData, token } = response.data;
+
+        // Store authentication data
+        storage.set("influbazzar_token", token);
+        storage.set("influbazzar_user", userData);
+
+        // Clean up temporary signup data
+        storage.remove("influbazzar_signup_data");
+
+        // Update state
+        setUser(userData);
+        setIsAuthenticated(true);
+
+        console.log("OTP verification successful for user:", userData.email);
+      } else {
+        throw new Error(response.message || "OTP verification failed");
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Logout function
+   *
+   * Backend Integration:
+   * - POST /api/auth/logout (invalidate token on server)
+   * - Clear all user sessions
+   * - Log security event
    */
   const logout = () => {
-    console.log("🚪 Logging out user:", user?.email);
+    try {
+      // Call backend logout endpoint
+      api.logout();
 
-    // {{Dynamic}} - Call backend to invalidate tokens
-    // await api.post('/api/auth/logout', { token });
+      // Clear local state and storage
+      clearAuthData();
 
-    // Clear state
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
-
-    // Clear stored data
-    clearStoredAuthData();
-
-    console.log("✅ User logged out successfully");
+      console.log("User logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if backend call fails, clear local data
+      clearAuthData();
+    }
   };
 
   /**
-   * Update User Function
-   *
-   * Updates user profile data
-   * {{Dynamic}} - Should sync with backend user profile
+   * Update user data in state and storage
    */
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-
-      // Update localStorage
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
-
-      // {{Dynamic}} - Sync with backend
-      // await api.patch('/api/users/me', userData);
-
-      console.log("👤 User profile updated:", Object.keys(userData));
+      storage.set("influbazzar_user", updatedUser);
     }
   };
 
   /**
-   * Token Refresh Function
+   * Refresh user data from backend
    *
-   * Refreshes expired access tokens using refresh token
-   * {{Dynamic}} - Implement with your backend token refresh endpoint
+   * Backend Integration:
+   * - GET /api/users/profile
+   * - Update local user data with latest from server
    */
-  const refreshToken = async (): Promise<boolean> => {
+  const refreshUser = async (): Promise<void> => {
+    if (!isAuthenticated) return;
+
     try {
-      const storedRefreshToken = localStorage.getItem(
-        STORAGE_KEYS.REFRESH_TOKEN,
-      );
-
-      if (!storedRefreshToken) {
-        return false;
+      const response = await api.getProfile();
+      if (response.success && response.data) {
+        setUser(response.data);
+        storage.set("influbazzar_user", response.data);
       }
-
-      // {{Dynamic}} - Call backend refresh endpoint
-      // const response = await api.post('/api/auth/refresh', { refreshToken: storedRefreshToken });
-
-      // Demo implementation
-      const newAccessToken = `refreshed_token_${Date.now()}`;
-      setToken(newAccessToken);
-      localStorage.setItem(STORAGE_KEYS.TOKEN, newAccessToken);
-
-      return true;
     } catch (error) {
-      console.error("❌ Token refresh failed:", error);
-      logout(); // Force logout on refresh failure
-      return false;
+      console.error("Failed to refresh user data:", error);
+      // If token is invalid, logout user
+      if (error instanceof Error && error.message.includes("unauthorized")) {
+        logout();
+      }
     }
   };
 
-  // ===== UTILITY FUNCTIONS =====
-
   /**
-   * Check Onboarding Completion
+   * Check if user has completed onboarding
    *
-   * Determines if a user has completed the onboarding process
+   * Backend Integration:
+   * - Check user.onboardingCompleted field from database
+   * - Alternative: GET /api/users/onboarding-status
    */
-  const hasCompletedOnboarding = (userEmail: string): boolean => {
-    return localStorage.getItem(`onboarding_${userEmail}`) === "completed";
+  const hasCompletedOnboarding = (): boolean => {
+    return user?.onboardingCompleted || false;
   };
 
   /**
-   * Permission Check Function
+   * Complete onboarding process
    *
-   * Checks if current user has specific permission
-   * {{Dynamic}} - Implement with role-based permissions from backend
+   * Backend Integration:
+   * - POST /api/users/complete-onboarding
+   * - Update user.onboardingCompleted = true
+   * - Store all onboarding data in user profile
    */
-  const hasPermission = (permission: string): boolean => {
-    if (!user) return false;
+  const completeOnboarding = async (onboardingData: any): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const response = await api.completeOnboarding(onboardingData);
 
-    // {{Dynamic}} - Replace with real permission system
-    const rolePermissions: Record<UserRole, string[]> = {
-      creator: ["view_campaigns", "apply_campaigns", "upload_content"],
-      brand: ["create_campaigns", "view_creators", "manage_payments"],
-      agency: ["manage_creators", "create_campaigns", "view_analytics"],
-      admin: ["*"], // All permissions
-    };
+      if (response.success && response.data) {
+        const updatedUser = {
+          ...user,
+          ...response.data,
+          onboardingCompleted: true,
+        };
+        setUser(updatedUser as User);
+        storage.set("influbazzar_user", updatedUser);
 
-    const userPermissions = rolePermissions[user.role] || [];
-    return (
-      userPermissions.includes("*") || userPermissions.includes(permission)
-    );
+        // Clear temporary onboarding data
+        storage.remove("influbazzar_onboarding_data");
+
+        console.log("Onboarding completed successfully");
+      } else {
+        throw new Error(response.message || "Onboarding completion failed");
+      }
+    } catch (error) {
+      console.error("Onboarding completion error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /**
-   * Token Expiration Check
-   *
-   * Checks if the current access token is expired
-   * {{Dynamic}} - Implement JWT token validation
+   * Role checking utility functions
    */
-  const isTokenExpired = (): boolean => {
-    if (!token) return true;
-
-    // {{Dynamic}} - Implement JWT token expiration check
-    // const decoded = jwt.decode(token);
-    // return decoded.exp < Date.now() / 1000;
-
-    // Demo implementation - tokens expire after 1 hour
-    const tokenAge = Date.now() - parseInt(token.split("_")[2] || "0");
-    return tokenAge > 3600000; // 1 hour in milliseconds
+  const hasRole = (role: UserRole): boolean => {
+    return user?.role === role;
   };
 
-  // ===== CONTEXT VALUE =====
+  const isCreator = (): boolean => hasRole("creator");
+  const isBrand = (): boolean => hasRole("brand");
+  const isAdmin = (): boolean => hasRole("admin");
 
-  /**
-   * Context Value Object
-   *
-   * All authentication state and functions provided to child components
-   */
   const contextValue: AuthContextType = {
     // State
     user,
     isAuthenticated,
     isLoading,
-    token,
 
-    // Actions
+    // Authentication actions
     login,
     logout,
-    register,
-    updateUser,
-    refreshToken,
+    signup,
+    verifyOTP,
 
-    // Utilities
+    // User management
+    updateUser,
+    refreshUser,
+
+    // Onboarding
     hasCompletedOnboarding,
-    hasPermission,
-    isTokenExpired,
+    completeOnboarding,
+
+    // Role checking
+    hasRole,
+    isCreator,
+    isBrand,
+    isAdmin,
   };
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
+
+/**
+ * Backend Database Schema Suggestions:
+ *
+ * 1. users table:
+ *    - id (UUID, primary key)
+ *    - email (unique, indexed)
+ *    - phone (unique, indexed)
+ *    - password_hash (bcrypt)
+ *    - role (enum: creator, brand, agency, admin)
+ *    - first_name, last_name
+ *    - avatar_url
+ *    - is_email_verified (boolean)
+ *    - is_phone_verified (boolean)
+ *    - onboarding_completed (boolean)
+ *    - last_login_at (timestamp)
+ *    - created_at, updated_at (timestamps)
+ *
+ * 2. user_sessions table:
+ *    - id (UUID, primary key)
+ *    - user_id (foreign key to users)
+ *    - token_hash (indexed)
+ *    - device_info (JSON)
+ *    - ip_address
+ *    - expires_at (timestamp)
+ *    - created_at (timestamp)
+ *
+ * 3. creator_profiles table:
+ *    - user_id (foreign key to users, primary key)
+ *    - username (unique)
+ *    - bio (text)
+ *    - city, state
+ *    - social_handles (JSON)
+ *    - follower_count (integer)
+ *    - influbazzar_score (float)
+ *    - content_niches (JSON array)
+ *    - languages (JSON array)
+ *    - rates (JSON)
+ *    - preferences (JSON)
+ *
+ * 4. brand_profiles table:
+ *    - user_id (foreign key to users, primary key)
+ *    - company_name
+ *    - website
+ *    - industry
+ *    - company_size
+ *    - description (text)
+ *    - verification_status (enum)
+ *
+ * 5. otp_verifications table:
+ *    - id (UUID, primary key)
+ *    - phone (indexed)
+ *    - otp_code (hashed)
+ *    - expires_at (timestamp)
+ *    - attempts (integer)
+ *    - verified (boolean)
+ *    - created_at (timestamp)
+ */
