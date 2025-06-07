@@ -175,7 +175,7 @@ const Signup = () => {
     setIsLoading(true);
 
     // Simulate API call
-    setTimeout(() => {
+    const signupTimeout = setTimeout(() => {
       setIsLoading(false);
 
       toast({
@@ -183,10 +183,16 @@ const Signup = () => {
         description: "Welcome to Influbazzar! Redirecting to your dashboard...",
       });
 
-      setTimeout(() => {
+      const redirectTimeout = setTimeout(() => {
         navigate(currentRole.redirectTo);
       }, 1500);
+
+      // Cleanup redirect timeout
+      return () => clearTimeout(redirectTimeout);
     }, 2000);
+
+    // Cleanup signup timeout
+    return () => clearTimeout(signupTimeout);
   };
 
   const fillDemoData = () => {
