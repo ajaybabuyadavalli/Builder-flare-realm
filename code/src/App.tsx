@@ -2,8 +2,8 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
-import ProtectedRoute from "./components/ProtectedRoute";
-import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute.jsx";
 // Simple inline loading component
 const SimpleLoading = () => (
   <div className="min-h-screen bg-white flex items-center justify-center">
