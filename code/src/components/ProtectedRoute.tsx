@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { LoadingScreen } from "./ui/loading-simple";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: any;
   allowedRoles: string[];
   redirectTo?: string;
 }
