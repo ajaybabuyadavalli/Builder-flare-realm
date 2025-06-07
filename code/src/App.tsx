@@ -4,7 +4,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingProtectedRoute from "./components/OnboardingProtectedRoute";
-import { LoadingScreen } from "./components/ui/loading";
+import { LoadingScreen } from "./components/ui/loading-simple";
 
 // Public pages
 const Index = lazy(() => import("./pages/Index"));
