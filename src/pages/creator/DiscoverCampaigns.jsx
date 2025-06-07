@@ -1,625 +1,868 @@
-import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+/**
+ * DiscoverCampaigns.jsx
+ *
+ * Purpose: Advanced campaign discovery with filtering, search, and interactive cards
+ *
+ * Features:
+ * - Sticky filter toolbar with multiple filter options
+ * - Real-time search functionality
+ * - Campaign cards with hover effects and ripple animations
+ * - Recommended campaigns section
+ * - Save campaign functionality
+ * - Modal for campaign details and application
+ * - Responsive design with mobile-optimized filters
+ *
+ * Backend Integration:
+ * - Campaign search and filtering API
+ * - Save/unsave campaign functionality
+ * - Campaign application submission
+ * - Recommended campaigns based on creator profile
+ */
+
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DiscoverCampaigns = () => {
+  const { user } = useAuth();
+  const [campaigns, setCampaigns] = useState([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState([]);
   const [filters, setFilters] = useState({
-    category: "all",
-    budget: "all",
+    search: "",
     platform: "all",
-    deadline: "all",
-    searchTerm: "",
+    niche: "all",
+    language: "all",
+    campaignType: "all",
+    region: "all",
+    followerRange: [0, 1000000],
+    sortBy: "trending",
   });
-
+  const [isFilterSticky, setIsFilterSticky] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [savedCampaigns, setSavedCampaigns] = useState(new Set());
+  const [isLoading, setIsLoading] = useState(false);
+  const filterRef = useRef(null);
 
-  const categories = [
-    { id: "all", name: "All Categories" },
-    { id: "fashion", name: "Fashion & Lifestyle" },
-    { id: "tech", name: "Technology" },
-    { id: "food", name: "Food & Beverage" },
-    { id: "fitness", name: "Health & Fitness" },
-    { id: "travel", name: "Travel" },
-    { id: "beauty", name: "Beauty & Skincare" },
-    { id: "gaming", name: "Gaming" },
-    { id: "education", name: "Education" },
-  ];
+  // Sample campaigns data
+  useEffect(() => {
+    const sampleCampaigns = [
+      {
+        id: 1,
+        title: "Summer Fashion Collection Launch",
+        brand: "StyleCo",
+        payout: 25000,
+        platform: "Instagram",
+        deadline: "2024-02-20",
+        applicants: 127,
+        tags: ["Fashion", "UGC", "Reels"],
+        niche: "fashion",
+        language: "english",
+        campaignType: "paid",
+        region: "mumbai",
+        followerRequirement: 50000,
+        description:
+          "Create authentic content showcasing our summer collection",
+        requirements: [
+          "Minimum 50K followers",
+          "Fashion/Lifestyle niche",
+          "High engagement rate",
+          "Previous brand collaborations",
+        ],
+        deliverables: [
+          "2 Instagram posts",
+          "3 Instagram stories",
+          "1 Instagram reel",
+        ],
+        featured: true,
+      },
+      {
+        id: 2,
+        title: "Fitness App Promotion",
+        brand: "FitTech",
+        payout: 15000,
+        platform: "YouTube",
+        deadline: "2024-02-25",
+        applicants: 89,
+        tags: ["Fitness", "Tech", "Review"],
+        niche: "fitness",
+        language: "hindi",
+        campaignType: "paid",
+        region: "delhi",
+        followerRequirement: 25000,
+        description: "Review our new fitness app and create workout content",
+        requirements: [
+          "Minimum 25K subscribers",
+          "Fitness content creator",
+          "Regular posting schedule",
+        ],
+        deliverables: ["1 YouTube video review", "2 workout videos using app"],
+        featured: false,
+      },
+      {
+        id: 3,
+        title: "Skincare Product Collaboration",
+        brand: "GlowBeauty",
+        payout: 0,
+        platform: "Instagram",
+        deadline: "2024-03-01",
+        applicants: 156,
+        tags: ["Beauty", "Skincare", "Barter"],
+        niche: "beauty",
+        language: "english",
+        campaignType: "barter",
+        region: "bangalore",
+        followerRequirement: 30000,
+        description: "Try our new skincare line and share your honest review",
+        requirements: [
+          "Minimum 30K followers",
+          "Beauty/Skincare content",
+          "Authentic reviews",
+        ],
+        deliverables: [
+          "Product unboxing reel",
+          "30-day skincare journey",
+          "Honest review post",
+        ],
+        featured: false,
+      },
+      {
+        id: 4,
+        title: "Travel Destination Campaign",
+        brand: "WanderLust Tours",
+        payout: 50000,
+        platform: "Instagram",
+        deadline: "2024-02-18",
+        applicants: 203,
+        tags: ["Travel", "Lifestyle", "Photography"],
+        niche: "travel",
+        language: "english",
+        campaignType: "paid",
+        region: "goa",
+        followerRequirement: 75000,
+        description: "Showcase beautiful destinations with our travel packages",
+        requirements: [
+          "Minimum 75K followers",
+          "Travel content creator",
+          "Professional photography skills",
+        ],
+        deliverables: [
+          "5 Instagram posts",
+          "10 Instagram stories",
+          "2 Instagram reels",
+        ],
+        featured: true,
+      },
+      {
+        id: 5,
+        title: "Food Delivery App Launch",
+        brand: "QuickBites",
+        payout: 20000,
+        platform: "TikTok",
+        deadline: "2024-02-22",
+        applicants: 94,
+        tags: ["Food", "Lifestyle", "App"],
+        niche: "food",
+        language: "hindi",
+        campaignType: "paid",
+        region: "pune",
+        followerRequirement: 40000,
+        description: "Create engaging content about food ordering experience",
+        requirements: [
+          "Minimum 40K followers",
+          "Food content creator",
+          "Creative video skills",
+        ],
+        deliverables: ["3 TikTok videos", "Food ordering journey"],
+        featured: false,
+      },
+    ];
+    setCampaigns(sampleCampaigns);
+    setFilteredCampaigns(sampleCampaigns);
+  }, []);
 
-  const campaigns = [
-    {
-      id: 1,
-      brand: "StyleCo",
-      title: "Summer Fashion Collection Launch",
-      description:
-        "Showcase our new summer collection with authentic styling tips and outfit inspirations. Looking for fashion creators who can create engaging content around sustainable fashion.",
-      budget: "₹25,000 - ₹35,000",
-      category: "fashion",
-      platform: ["Instagram", "TikTok"],
-      deadline: "2024-02-20",
-      requirements: [
-        "Minimum 50K followers on Instagram",
-        "Fashion/Lifestyle content creator",
-        "High engagement rate (>3%)",
-        "Located in major Indian cities",
-      ],
-      deliverables: [
-        "3 Instagram posts",
-        "5 Instagram stories",
-        "1 TikTok video",
-        "Usage rights for 6 months",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&h=100&fit=crop",
-      applications: 24,
-      daysLeft: 8,
-      rating: 4.8,
-      isSponsored: true,
-    },
-    {
-      id: 2,
-      brand: "TechFlow",
-      title: "Productivity App Review & Tutorial",
-      description:
-        "Create authentic reviews and tutorials for our new productivity app. Show real use cases and benefits for your audience.",
-      budget: "₹18,000 - ₹28,000",
-      category: "tech",
-      platform: ["YouTube", "Instagram"],
-      deadline: "2024-02-25",
-      requirements: [
-        "Tech/Productivity content creator",
-        "Minimum 25K YouTube subscribers",
-        "Previous app review experience",
-        "English speaking audience",
-      ],
-      deliverables: [
-        "1 YouTube video (10-15 mins)",
-        "3 Instagram posts",
-        "App store review",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop",
-      applications: 16,
-      daysLeft: 13,
-      rating: 4.6,
-      isSponsored: false,
-    },
-    {
-      id: 3,
-      brand: "FitLife Nutrition",
-      title: "Fitness Challenge & Supplement Review",
-      description:
-        "Join our 30-day fitness challenge and showcase the transformation journey using our supplements. Perfect for fitness enthusiasts.",
-      budget: "₹30,000 - ₹45,000",
-      category: "fitness",
-      platform: ["Instagram", "YouTube"],
-      deadline: "2024-02-18",
-      requirements: [
-        "Fitness/Health content creator",
-        "Minimum 75K followers",
-        "Previous supplement partnerships",
-        "Willing to do 30-day challenge",
-      ],
-      deliverables: [
-        "Weekly progress posts (4 weeks)",
-        "2 YouTube videos",
-        "Instagram Reels (8-10)",
-        "Before/After photos",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100&h=100&fit=crop",
-      applications: 31,
-      daysLeft: 6,
-      rating: 4.9,
-      isSponsored: true,
-    },
-    {
-      id: 4,
-      brand: "EcoLife",
-      title: "Sustainable Living Content Series",
-      description:
-        "Create educational content about sustainable living, eco-friendly products, and green lifestyle tips.",
-      budget: "₹20,000 - ₹30,000",
-      category: "lifestyle",
-      platform: ["Instagram", "TikTok"],
-      deadline: "2024-03-01",
-      requirements: [
-        "Lifestyle/Sustainability content",
-        "Minimum 40K followers",
-        "Authentic voice for eco-friendly content",
-        "Previous brand partnerships",
-      ],
-      deliverables: [
-        "5 Instagram posts",
-        "10 Instagram stories",
-        "3 TikTok videos",
-        "1 IGTV/Reels",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=100&h=100&fit=crop",
-      applications: 19,
-      daysLeft: 19,
-      rating: 4.7,
-      isSponsored: false,
-    },
-    {
-      id: 5,
-      brand: "GameZone",
-      title: "Gaming Setup & Equipment Review",
-      description:
-        "Review our latest gaming peripherals and create setup content. Perfect for gaming creators who want to showcase premium equipment.",
-      budget: "₹35,000 - ₹50,000",
-      category: "gaming",
-      platform: ["YouTube", "Twitch"],
-      deadline: "2024-02-22",
-      requirements: [
-        "Gaming content creator",
-        "Minimum 100K YouTube subscribers",
-        "Regular gaming setup content",
-        "Male audience 18-35",
-      ],
-      deliverables: [
-        "1 Setup tour video",
-        "2 Product review videos",
-        "Live stream sessions (3)",
-        "Social media posts",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop",
-      applications: 8,
-      daysLeft: 10,
-      rating: 4.5,
-      isSponsored: true,
-    },
-    {
-      id: 6,
-      brand: "TravelWise",
-      title: "Budget Travel Tips & Destination Guide",
-      description:
-        "Create travel guides for budget-conscious travelers. Share tips, tricks, and hidden gems for affordable travel experiences.",
-      budget: "₹22,000 - ₹32,000",
-      category: "travel",
-      platform: ["Instagram", "YouTube"],
-      deadline: "2024-02-28",
-      requirements: [
-        "Travel content creator",
-        "Minimum 60K followers",
-        "Budget travel focus",
-        "High-quality photography",
-      ],
-      deliverables: [
-        "1 Destination guide video",
-        "8 Instagram posts",
-        "15 Instagram stories",
-        "Travel tips carousel",
-      ],
-      brandImage:
-        "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100&h=100&fit=crop",
-      applications: 27,
-      daysLeft: 16,
-      rating: 4.8,
-      isSponsored: false,
-    },
-  ];
+  // Sticky filter effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (filterRef.current) {
+        const filterTop = filterRef.current.offsetTop;
+        setIsFilterSticky(window.scrollY > filterTop);
+      }
+    };
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesCategory =
-      filters.category === "all" || campaign.category === filters.category;
-    const matchesSearch =
-      filters.searchTerm === "" ||
-      campaign.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      campaign.brand.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      campaign.description
-        .toLowerCase()
-        .includes(filters.searchTerm.toLowerCase());
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    return matchesCategory && matchesSearch;
-  });
+  // Filter campaigns
+  useEffect(() => {
+    let filtered = campaigns;
 
-  const handleApply = (campaignId) => {
-    alert(
-      `Applied to campaign ${campaignId}! You'll receive a confirmation email shortly.`,
+    // Search filter
+    if (filters.search) {
+      filtered = filtered.filter(
+        (campaign) =>
+          campaign.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          campaign.brand.toLowerCase().includes(filters.search.toLowerCase()) ||
+          campaign.tags.some((tag) =>
+            tag.toLowerCase().includes(filters.search.toLowerCase()),
+          ),
+      );
+    }
+
+    // Platform filter
+    if (filters.platform !== "all") {
+      filtered = filtered.filter(
+        (campaign) =>
+          campaign.platform.toLowerCase() === filters.platform.toLowerCase(),
+      );
+    }
+
+    // Niche filter
+    if (filters.niche !== "all") {
+      filtered = filtered.filter(
+        (campaign) => campaign.niche === filters.niche,
+      );
+    }
+
+    // Language filter
+    if (filters.language !== "all") {
+      filtered = filtered.filter(
+        (campaign) => campaign.language === filters.language,
+      );
+    }
+
+    // Campaign type filter
+    if (filters.campaignType !== "all") {
+      filtered = filtered.filter(
+        (campaign) => campaign.campaignType === filters.campaignType,
+      );
+    }
+
+    // Region filter
+    if (filters.region !== "all") {
+      filtered = filtered.filter(
+        (campaign) => campaign.region === filters.region,
+      );
+    }
+
+    // Follower range filter
+    filtered = filtered.filter(
+      (campaign) =>
+        campaign.followerRequirement >= filters.followerRange[0] &&
+        campaign.followerRequirement <= filters.followerRange[1],
     );
+
+    // Sort campaigns
+    switch (filters.sortBy) {
+      case "trending":
+        filtered.sort((a, b) => b.applicants - a.applicants);
+        break;
+      case "newest":
+        filtered.sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+        break;
+      case "payout":
+        filtered.sort((a, b) => b.payout - a.payout);
+        break;
+      case "ending":
+        filtered.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        break;
+      default:
+        break;
+    }
+
+    setFilteredCampaigns(filtered);
+  }, [campaigns, filters]);
+
+  const updateFilter = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Navbar />
+  const clearAllFilters = () => {
+    setFilters({
+      search: "",
+      platform: "all",
+      niche: "all",
+      language: "all",
+      campaignType: "all",
+      region: "all",
+      followerRange: [0, 1000000],
+      sortBy: "trending",
+    });
+  };
 
+  const removeFilter = (key) => {
+    if (key === "followerRange") {
+      updateFilter(key, [0, 1000000]);
+    } else {
+      updateFilter(key, "all");
+    }
+  };
+
+  const handleSaveCampaign = (campaignId) => {
+    setSavedCampaigns((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(campaignId)) {
+        newSet.delete(campaignId);
+      } else {
+        newSet.add(campaignId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleApplyCampaign = (campaign) => {
+    setSelectedCampaign(campaign);
+    setIsModalOpen(true);
+  };
+
+  const getDaysLeft = (deadline) => {
+    const today = new Date();
+    const endDate = new Date(deadline);
+    const diffTime = endDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === 0) return "Barter";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getPlatformIcon = (platform) => {
+    switch (platform.toLowerCase()) {
+      case "instagram":
+        return "📷";
+      case "youtube":
+        return "📺";
+      case "tiktok":
+        return "🎵";
+      case "facebook":
+        return "📘";
+      case "twitter":
+        return "🐦";
+      default:
+        return "📱";
+    }
+  };
+
+  const activeFiltersCount = Object.keys(filters).filter((key) => {
+    if (key === "search") return filters[key] !== "";
+    if (key === "followerRange")
+      return filters[key][0] !== 0 || filters[key][1] !== 1000000;
+    if (key === "sortBy") return false;
+    return filters[key] !== "all";
+  }).length;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white pt-20">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Discover Campaigns
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Find the perfect brand partnerships for your content
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-purple-600">
-                {filteredCampaigns.length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                Available Campaigns
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Discover Campaigns
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Find the perfect brand collaborations that match your content style
+            and audience
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search campaigns, brands, or tags..."
+              value={filters.search}
+              onChange={(e) => updateFilter("search", e.target.value)}
+              className="w-full bg-gray-800/50 border border-gray-700/50 rounded-2xl px-6 py-4 pl-12 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50 transition-all duration-300"
+            />
+            <svg
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            {filters.search && (
+              <button
+                onClick={() => updateFilter("search", "")}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-300"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Search Campaigns
-              </label>
-              <input
-                type="text"
-                value={filters.searchTerm}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    searchTerm: e.target.value,
-                  }))
-                }
-                placeholder="Search by brand, title, or keywords..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
+        <div
+          ref={filterRef}
+          className={`transition-all duration-300 ${
+            isFilterSticky
+              ? "fixed top-16 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-lg border-b border-gray-700/50 shadow-lg"
+              : "relative"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex flex-wrap gap-3">
+                {/* Platform Filter */}
+                <select
+                  value={filters.platform}
+                  onChange={(e) => updateFilter("platform", e.target.value)}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-400/50"
+                >
+                  <option value="all">All Platforms</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="facebook">Facebook</option>
+                </select>
+
+                {/* Niche Filter */}
+                <select
+                  value={filters.niche}
+                  onChange={(e) => updateFilter("niche", e.target.value)}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-400/50"
+                >
+                  <option value="all">All Niches</option>
+                  <option value="fashion">Fashion</option>
+                  <option value="beauty">Beauty</option>
+                  <option value="fitness">Fitness</option>
+                  <option value="food">Food</option>
+                  <option value="travel">Travel</option>
+                  <option value="tech">Technology</option>
+                </select>
+
+                {/* Language Filter */}
+                <select
+                  value={filters.language}
+                  onChange={(e) => updateFilter("language", e.target.value)}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-400/50"
+                >
+                  <option value="all">All Languages</option>
+                  <option value="english">English</option>
+                  <option value="hindi">Hindi</option>
+                  <option value="bengali">Bengali</option>
+                  <option value="tamil">Tamil</option>
+                </select>
+
+                {/* Campaign Type Filter */}
+                <select
+                  value={filters.campaignType}
+                  onChange={(e) => updateFilter("campaignType", e.target.value)}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-400/50"
+                >
+                  <option value="all">All Types</option>
+                  <option value="paid">Paid</option>
+                  <option value="barter">Barter</option>
+                </select>
+
+                {/* Sort By */}
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => updateFilter("sortBy", e.target.value)}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-400/50"
+                >
+                  <option value="trending">Trending</option>
+                  <option value="newest">Newest</option>
+                  <option value="payout">Highest Payout</option>
+                  <option value="ending">Ending Soon</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-300"
+                  >
+                    Clear All ({activeFiltersCount})
+                  </button>
+                )}
+                <span className="text-sm text-gray-400">
+                  {filteredCampaigns.length} campaigns found
+                </span>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Category
-              </label>
-              <select
-                value={filters.category}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, category: e.target.value }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+            {/* Active Filter Chips */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {Object.entries(filters).map(([key, value]) => {
+                  if (
+                    (key === "search" && value) ||
+                    (key !== "search" &&
+                      key !== "sortBy" &&
+                      key !== "followerRange" &&
+                      value !== "all") ||
+                    (key === "followerRange" &&
+                      (value[0] !== 0 || value[1] !== 1000000))
+                  ) {
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center space-x-2 bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full text-sm border border-purple-400/30"
+                      >
+                        <span>
+                          {key === "followerRange"
+                            ? `${value[0] / 1000}K - ${value[1] / 1000}K followers`
+                            : `${key}: ${value}`}
+                        </span>
+                        <button
+                          onClick={() => removeFilter(key)}
+                          className="text-purple-300 hover:text-white transition-colors duration-300"
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recommended Campaigns */}
+        {filteredCampaigns.some((c) => c.featured) && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center">
+              🎯 Recommended For You
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCampaigns
+                .filter((c) => c.featured)
+                .map((campaign) => (
+                  <CampaignCard
+                    key={campaign.id}
+                    campaign={campaign}
+                    isSaved={savedCampaigns.has(campaign.id)}
+                    onSave={handleSaveCampaign}
+                    onApply={handleApplyCampaign}
+                    isRecommended={true}
+                  />
                 ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Budget Range
-              </label>
-              <select
-                value={filters.budget}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, budget: e.target.value }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="all">All Budgets</option>
-                <option value="low">₹10K - ₹25K</option>
-                <option value="medium">₹25K - ₹40K</option>
-                <option value="high">₹40K+</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Platform
-              </label>
-              <select
-                value={filters.platform}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, platform: e.target.value }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="all">All Platforms</option>
-                <option value="instagram">Instagram</option>
-                <option value="youtube">YouTube</option>
-                <option value="tiktok">TikTok</option>
-                <option value="twitter">Twitter</option>
-              </select>
             </div>
           </div>
+        )}
 
-          {/* Quick Filter Tags */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              "Sponsored",
-              "High Budget",
-              "Quick Turnaround",
-              "Long-term",
-              "Exclusive",
-            ].map((tag) => (
-              <button
-                key={tag}
-                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-full hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-600 transition-all"
-              >
-                {tag}
-              </button>
+        {/* All Campaigns */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6">All Campaigns</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCampaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                isSaved={savedCampaigns.has(campaign.id)}
+                onSave={handleSaveCampaign}
+                onApply={handleApplyCampaign}
+              />
             ))}
           </div>
         </div>
 
-        {/* Campaigns Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredCampaigns.map((campaign) => (
-            <div
-              key={campaign.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden"
-            >
-              {campaign.isSponsored && (
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-1 text-sm font-medium">
-                  ⭐ Sponsored Campaign
-                </div>
-              )}
-
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src={campaign.brandImage}
-                      alt={campaign.brand}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {campaign.brand}
-                      </h3>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center">
-                          <span className="text-yellow-400">⭐</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
-                            {campaign.rating}
-                          </span>
-                        </div>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {campaign.applications} applications
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-green-600">
-                      {campaign.budget}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {campaign.daysLeft} days left
-                    </div>
-                  </div>
-                </div>
-
-                {/* Title and Description */}
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  {campaign.title}
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                  {campaign.description}
-                </p>
-
-                {/* Platforms */}
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Platforms:
-                  </span>
-                  {campaign.platform.map((platform, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs"
-                    >
-                      {platform}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Requirements Preview */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Key Requirements:
-                  </p>
-                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    {campaign.requirements.slice(0, 2).map((req, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-purple-500 mr-2">•</span>
-                        {req}
-                      </li>
-                    ))}
-                    {campaign.requirements.length > 2 && (
-                      <li className="text-purple-600 dark:text-purple-400 text-xs">
-                        +{campaign.requirements.length - 2} more requirements
-                      </li>
-                    )}
-                  </ul>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => setSelectedCampaign(campaign)}
-                    className="text-purple-600 dark:text-purple-400 hover:text-purple-500 text-sm font-medium"
-                  >
-                    View Details
-                  </button>
-                  <div className="flex items-center space-x-3">
-                    <button className="text-gray-400 hover:text-red-500 transition-colors">
-                      ❤️
-                    </button>
-                    <button
-                      onClick={() => handleApply(campaign.id)}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
-                    >
-                      Apply Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
+        {/* Empty State */}
         {filteredCampaigns.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-400 mb-2">
               No campaigns found
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Try adjusting your filters or search terms to find more
-              opportunities
+            <p className="text-gray-500 mb-6">
+              Try adjusting your filters or search terms
             </p>
             <button
-              onClick={() =>
-                setFilters({
-                  category: "all",
-                  budget: "all",
-                  platform: "all",
-                  deadline: "all",
-                  searchTerm: "",
-                })
-              }
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              onClick={clearAllFilters}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
             >
               Clear All Filters
             </button>
           </div>
         )}
-
-        {/* Load More */}
-        {filteredCampaigns.length > 0 && (
-          <div className="text-center mt-12">
-            <button className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-8 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-              Load More Campaigns
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Campaign Detail Modal */}
-      {selectedCampaign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Campaign Details
-                </h2>
-                <button
-                  onClick={() => setSelectedCampaign(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  ✕
-                </button>
-              </div>
+      {/* Campaign Application Modal */}
+      {isModalOpen && selectedCampaign && (
+        <CampaignModal
+          campaign={selectedCampaign}
+          onClose={() => setIsModalOpen(false)}
+          onApply={() => {
+            setIsModalOpen(false);
+            // Handle application submission
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={selectedCampaign.brandImage}
-                    alt={selectedCampaign.brand}
-                    className="w-16 h-16 rounded-xl object-cover"
-                  />
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {selectedCampaign.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {selectedCampaign.brand}
-                    </p>
-                  </div>
-                </div>
+// Campaign Card Component
+const CampaignCard = ({
+  campaign,
+  isSaved,
+  onSave,
+  onApply,
+  isRecommended = false,
+}) => {
+  const daysLeft = Math.max(
+    0,
+    Math.ceil(
+      (new Date(campaign.deadline) - new Date()) / (1000 * 60 * 60 * 24),
+    ),
+  );
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Budget
-                    </div>
-                    <div className="text-lg font-semibold text-green-600">
-                      {selectedCampaign.budget}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Deadline
-                    </div>
-                    <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {selectedCampaign.deadline}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Description
-                  </h4>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    {selectedCampaign.description}
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Requirements
-                  </h4>
-                  <ul className="space-y-2">
-                    {selectedCampaign.requirements.map((req, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        <span className="text-gray-600 dark:text-gray-300">
-                          {req}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Deliverables
-                  </h4>
-                  <ul className="space-y-2">
-                    {selectedCampaign.deliverables.map((deliverable, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-purple-500 mr-2">•</span>
-                        <span className="text-gray-600 dark:text-gray-300">
-                          {deliverable}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => setSelectedCampaign(null)}
-                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleApply(selectedCampaign.id);
-                      setSelectedCampaign(null);
-                    }}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
-                  >
-                    Apply to Campaign
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+  return (
+    <div
+      className={`group relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-lg rounded-2xl p-6 border transition-all duration-300 hover:transform hover:scale-105 cursor-pointer ${
+        isRecommended
+          ? "border-purple-400/50 shadow-lg shadow-purple-500/25"
+          : "border-gray-700/50 hover:border-purple-400/50"
+      }`}
+    >
+      {/* Recommended Badge */}
+      {isRecommended && (
+        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+          Recommended
         </div>
       )}
 
-      <Footer />
+      {/* Save Button */}
+      <button
+        onClick={() => onSave(campaign.id)}
+        className="absolute top-4 right-4 z-10 text-gray-400 hover:text-red-400 transition-colors duration-300"
+      >
+        {isSaved ? "❤️" : "🤍"}
+      </button>
+
+      {/* Campaign Info */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              campaign.platform.toLowerCase() === "instagram"
+                ? "bg-pink-600/20 text-pink-400"
+                : campaign.platform.toLowerCase() === "youtube"
+                  ? "bg-red-600/20 text-red-400"
+                  : campaign.platform.toLowerCase() === "tiktok"
+                    ? "bg-purple-600/20 text-purple-400"
+                    : "bg-blue-600/20 text-blue-400"
+            }`}
+          >
+            {getPlatformIcon(campaign.platform)} {campaign.platform}
+          </span>
+          <span className="text-2xl font-bold text-green-400">
+            {formatCurrency(campaign.payout)}
+          </span>
+        </div>
+
+        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">
+          {campaign.title}
+        </h3>
+        <p className="text-gray-400 text-sm mb-3">{campaign.brand}</p>
+        <p className="text-gray-300 text-sm line-clamp-2 mb-4">
+          {campaign.description}
+        </p>
+      </div>
+
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {campaign.tags.map((tag, index) => (
+          <span
+            key={index}
+            className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-full"
+          >
+            #{tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Stats */}
+      <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+        <span>👥 {campaign.applicants} applicants</span>
+        <span
+          className={`font-medium ${
+            daysLeft <= 3
+              ? "text-red-400"
+              : daysLeft <= 7
+                ? "text-yellow-400"
+                : "text-green-400"
+          }`}
+        >
+          ⏳ {daysLeft} days left
+        </span>
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => onApply(campaign)}
+          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300"
+        >
+          View Details
+        </button>
+        <button
+          onClick={() => onApply(campaign)}
+          className="flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 py-2 px-4 rounded-lg font-semibold transition-all duration-300 border border-green-400/30"
+        >
+          Apply Now
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Campaign Modal Component
+const CampaignModal = ({ campaign, onClose, onApply }) => {
+  const [applicationText, setApplicationText] = useState("");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-gray-800/95 backdrop-blur-lg rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700/50">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">{campaign.title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors duration-300"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Campaign Details */}
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-semibold text-white mb-2">
+              Campaign Description
+            </h3>
+            <p className="text-gray-300">{campaign.description}</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-white mb-2">Requirements</h3>
+            <ul className="space-y-1">
+              {campaign.requirements.map((req, index) => (
+                <li
+                  key={index}
+                  className="text-gray-300 text-sm flex items-center"
+                >
+                  <span className="text-green-400 mr-2">✓</span>
+                  {req}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-white mb-2">Deliverables</h3>
+            <ul className="space-y-1">
+              {campaign.deliverables.map((deliverable, index) => (
+                <li
+                  key={index}
+                  className="text-gray-300 text-sm flex items-center"
+                >
+                  <span className="text-purple-400 mr-2">•</span>
+                  {deliverable}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold text-white mb-2">Payout</h3>
+              <p className="text-2xl font-bold text-green-400">
+                {formatCurrency(campaign.payout)}
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-white mb-2">Deadline</h3>
+              <p className="text-gray-300">
+                {new Date(campaign.deadline).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Application Form */}
+          <div>
+            <h3 className="font-semibold text-white mb-2">
+              Application Message
+            </h3>
+            <textarea
+              value={applicationText}
+              onChange={(e) => setApplicationText(e.target.value)}
+              placeholder="Tell the brand why you're perfect for this campaign..."
+              className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50 transition-all duration-300 h-32 resize-none"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-gray-600/20 hover:bg-gray-600/30 text-gray-300 py-3 px-6 rounded-lg font-semibold transition-all duration-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onApply}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300"
+            >
+              Submit Application
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
