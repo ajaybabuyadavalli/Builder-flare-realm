@@ -1,123 +1,171 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import React, { useState } from "react";
 import { useTheme } from "next-themes";
-// Simplified navbar without dropdown
-import { cn } from "@/lib/utils";
 
-export const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const navigation = [
     { name: "Home", href: "/" },
-    { name: "Pricing", href: "/pricing" },
     { name: "About", href: "/about" },
+    { name: "Pricing", href: "/pricing" },
     { name: "Case Studies", href: "/case-studies" },
     { name: "Contact", href: "/contact" },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
+          <div className="flex-shrink-0 flex items-center">
+            <a href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">IB</span>
               </div>
-              <span className="font-bold text-xl">Influbazzar</span>
-            </Link>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                Influbazzar
+              </span>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  location.pathname === item.href
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
-
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </Button>
-
-            {/* CTA Buttons */}
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                asChild
-              >
-                <Link to="/signup">Get Started</Link>
-              </Button>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {navigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  {item.name}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+          {/* Right side buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+              aria-label="Toggle dark mode"
             >
-              {isMenuOpen ? (
-                <X className="h-4 w-4" />
+              {theme === "dark" ? (
+                <span className="text-xl">☀️</span>
               ) : (
-                <Menu className="h-4 w-4" />
+                <span className="text-xl">🌙</span>
               )}
-            </Button>
+            </button>
+
+            <a
+              href="/login"
+              className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Login
+            </a>
+            <a
+              href="/signup"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors"
+            >
+              Sign Up
+            </a>
+            <a
+              href="/creator/login"
+              className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              Creator Portal
+            </a>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300"
+              aria-label="Toggle dark mode"
+            >
+              {theme === "dark" ? (
+                <span className="text-xl">☀️</span>
+              ) : (
+                <span className="text-xl">🌙</span>
+              )}
+            </button>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {isOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
 
         {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <div className="space-y-4">
-              {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
               {navigation.map((item) => (
-                <Link
+                <a
                   key={item.name}
-                  to={item.href}
-                  className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsMenuOpen(false)}
+                  href={item.href}
+                  className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 block px-3 py-2 text-base font-medium transition-colors"
+                  onClick={() => setIsOpen(false)}
                 >
                   {item.name}
-                </Link>
+                </a>
               ))}
-
-              <div className="pt-4 border-t space-y-2">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
-                  asChild
-                >
-                  <Link to="/signup">Get Started</Link>
-                </Button>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 pb-3">
+                <div className="flex items-center px-3 space-x-3">
+                  <a
+                    href="/login"
+                    className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 text-base font-medium transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Login
+                  </a>
+                  <a
+                    href="/signup"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign Up
+                  </a>
+                </div>
+                <div className="mt-3 px-3">
+                  <a
+                    href="/creator/login"
+                    className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors block text-center"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Creator Portal
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -126,3 +174,5 @@ export const Navbar = () => {
     </nav>
   );
 };
+
+export default Navbar;

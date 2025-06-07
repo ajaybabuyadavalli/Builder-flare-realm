@@ -1,164 +1,143 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import React, { useState } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState("creator");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate signup
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/");
-    }, 2000);
+    alert(`${selectedRole} signup functionality will be connected to backend`);
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <Navbar />
+      <div className="min-h-[80vh] bg-gray-50 dark:bg-gray-800 flex items-center justify-center py-12">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <div className="mx-auto w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">IB</span>
+            </div>
+            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
+              Join Influbazzar
+            </h2>
+          </div>
 
-      <section className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950">
-        <div className="max-w-md mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <Card className="border-2 border-purple-200 shadow-lg">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Join Influbazzar
-                </CardTitle>
-                <p className="text-muted-foreground">Create your account</p>
-              </CardHeader>
+          <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                className={`py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  selectedRole === "creator"
+                    ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+                onClick={() => setSelectedRole("creator")}
+              >
+                Creator
+              </button>
+              <button
+                className={`py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  selectedRole === "brand"
+                    ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+                onClick={() => setSelectedRole("brand")}
+              >
+                Brand
+              </button>
+            </div>
+          </div>
 
-              <CardContent>
-                <Tabs
-                  value={selectedRole}
-                  onValueChange={setSelectedRole}
-                  className="mb-6"
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  <TabsList className="grid grid-cols-2 w-full">
-                    <TabsTrigger value="creator">Creator</TabsTrigger>
-                    <TabsTrigger value="brand">Brand</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                  Full name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              >
+                Sign up as {selectedRole === "creator" ? "Creator" : "Brand"}
+              </button>
+            </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Create a password"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        className="pl-10 pr-10"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    disabled={isLoading}
-                  >
-                    {isLoading
-                      ? "Creating account..."
-                      : `Sign Up as ${selectedRole === "creator" ? "Creator" : "Brand"}`}
-                  </Button>
-                </form>
-
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Already have an account?{" "}
-                    <Link
-                      to="/login"
-                      className="text-purple-600 hover:underline"
-                    >
-                      Sign in
-                    </Link>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className="font-medium text-purple-600 hover:text-purple-500"
+                >
+                  Sign in
+                </a>
+              </p>
+            </div>
+          </form>
         </div>
-      </section>
-
+      </div>
       <Footer />
     </div>
   );
