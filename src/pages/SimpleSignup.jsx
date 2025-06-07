@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import SimpleNavbar from "@/components/SimpleNavbar";
+import SimpleFooter from "@/components/SimpleFooter";
 
 const SimpleSignup = () => {
   const [selectedRole, setSelectedRole] = useState("creator");
@@ -14,7 +16,9 @@ const SimpleSignup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+      <SimpleNavbar />
+      <div className="min-h-[80vh] bg-gray-50 dark:bg-gray-800 flex items-center justify-center py-12">
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
@@ -133,6 +137,7 @@ const SimpleSignup = () => {
           </div>
         </form>
       </div>
+      <SimpleFooter />
     </div>
   );
 };
