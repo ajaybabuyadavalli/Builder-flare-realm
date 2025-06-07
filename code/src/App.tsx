@@ -1,9 +1,14 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Loading } from "./components/ui/loading";
+import { LoadingScreen } from "./components/ui/loading";
 
 // Public pages
 const Index = lazy(() => import("./pages/Index"));
@@ -46,7 +51,7 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-            <Suspense fallback={<Loading />}>
+            <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
@@ -59,9 +64,11 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* Creator routes */}
+                {/* Creator authentication routes (public) */}
                 <Route path="/creator/login" element={<CreatorLogin />} />
                 <Route path="/creator/signup" element={<CreatorSignup />} />
+
+                {/* Protected Creator routes */}
                 <Route
                   path="/creator/dashboard"
                   element={
@@ -127,9 +134,11 @@ function App() {
                   }
                 />
 
-                {/* Brand routes */}
+                {/* Brand authentication routes (public) */}
                 <Route path="/brand/login" element={<BrandLogin />} />
                 <Route path="/brand/signup" element={<BrandSignup />} />
+
+                {/* Protected Brand routes */}
                 <Route
                   path="/brand/dashboard"
                   element={
@@ -167,6 +176,25 @@ function App() {
                   element={
                     <ProtectedRoute allowedRoles={["brand"]}>
                       <BrandAnalytics />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Catch-all redirects for role-based access */}
+                <Route
+                  path="/creator/*"
+                  element={
+                    <ProtectedRoute allowedRoles={["creator"]}>
+                      <NotFound />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/brand/*"
+                  element={
+                    <ProtectedRoute allowedRoles={["brand"]}>
+                      <NotFound />
                     </ProtectedRoute>
                   }
                 />

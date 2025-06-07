@@ -14,12 +14,17 @@ interface User {
   avatar?: string;
   followers?: string;
   influbazzarScore?: number;
+  company?: string;
+  website?: string;
+  industry?: string;
+  companySize?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role: string) => Promise<boolean>;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -41,6 +46,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Demo users database
   const demoUsers = {
@@ -80,65 +86,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
   };
 
-  // Load user from localStorage on mount
+  // Check for stored authentication on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem("influbazzar_user");
-    const savedAuth = localStorage.getItem("influbazzar_authenticated");
-
-    if (savedUser && savedAuth === "true") {
+    const checkStoredAuth = () => {
       try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
+        const storedUser = localStorage.getItem("influbazzar_user");
+        const storedAuth = localStorage.getItem("influbazzar_authenticated");
+
+        if (storedUser && storedAuth === "true") {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setIsAuthenticated(true);
+        }
       } catch (error) {
-        console.error("Error parsing saved user data:", error);
+        console.error("Error checking stored auth:", error);
+        // Clear invalid stored data
         localStorage.removeItem("influbazzar_user");
         localStorage.removeItem("influbazzar_authenticated");
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, []);
-
-  const login = async (
-    email: string,
-    password: string,
-    role: string,
-  ): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Check demo credentials
-    const demoUser = demoUsers[email as keyof typeof demoUsers];
-    const validPasswords = {
-      "creator@demo.com": "password123",
-      "brand@demo.com": "password123",
-      "agency@demo.com": "password123",
-      "admin@demo.com": "adminpass",
     };
 
-    const isValidCredentials =
-      demoUser &&
-      validPasswords[email as keyof typeof validPasswords] === password &&
-      demoUser.role === role;
+    checkStoredAuth();
+  }, []);
 
-    if (isValidCredentials) {
-      setUser(demoUser);
-      setIsAuthenticated(true);
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
 
-      // Persist to localStorage
-      localStorage.setItem("influbazzar_user", JSON.stringify(demoUser));
-      localStorage.setItem("influbazzar_authenticated", "true");
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      return true;
+      const demoUser = demoUsers[email as keyof typeof demoUsers];
+
+      if (demoUser && password === "password123") {
+        setUser(demoUser);
+        setIsAuthenticated(true);
+
+        // Store in localStorage for persistence
+        localStorage.setItem("influbazzar_user", JSON.stringify(demoUser));
+        localStorage.setItem("influbazzar_authenticated", "true");
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-
-    return false;
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
 
-    // Clear localStorage
+    // Clear stored data
     localStorage.removeItem("influbazzar_user");
     localStorage.removeItem("influbazzar_authenticated");
   };
@@ -147,6 +153,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
+
+      // Update stored data
       localStorage.setItem("influbazzar_user", JSON.stringify(updatedUser));
     }
   };
@@ -154,6 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isAuthenticated,
+    isLoading,
     login,
     logout,
     updateUser,
@@ -161,5 +170,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export default AuthProvider;
