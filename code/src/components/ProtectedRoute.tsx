@@ -25,11 +25,7 @@ interface ProtectedRouteProps {
  *   <BrandDashboard />
  * </ProtectedRoute>
  */
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  allowedRoles,
-  redirectTo,
-}) => {
+const ProtectedRoute = ({ children, allowedRoles, redirectTo }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 

@@ -31,7 +31,7 @@ interface OnboardingProtectedRouteProps {
  *   <CreatorDashboard />
  * </OnboardingProtectedRoute>
  */
-const OnboardingProtectedRoute: React.FC<OnboardingProtectedRouteProps> = ({
+const OnboardingProtectedRoute = ({
   children,
   allowedRoles,
   requireOnboarding = true,
