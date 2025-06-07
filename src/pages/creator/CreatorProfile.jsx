@@ -1,718 +1,764 @@
-import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+/**
+ * CreatorProfile.jsx
+ *
+ * Purpose: Comprehensive profile management with portfolio showcase and brand testimonials
+ *
+ * Features:
+ * - Profile card with photo upload and privacy toggle
+ * - Editable panels for platforms, languages, categories
+ * - Content portfolio grid with video previews
+ * - Brand testimonials carousel
+ * - Public/private profile preview
+ * - Request review functionality
+ * - Social media link management
+ *
+ * Backend Integration:
+ * - Profile data updates
+ * - Media upload handling
+ * - Portfolio content management
+ * - Testimonial collection system
+ */
+
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CreatorProfile = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [previewMode, setPreviewMode] = useState("brand");
   const [profileData, setProfileData] = useState({
-    name: "Alex Johnson",
-    username: "@alexcreates",
-    email: "alex@example.com",
-    phone: "+91 98765 43210",
-    bio: "Passionate content creator specializing in lifestyle, travel, and tech reviews. I love connecting with my audience through authentic storytelling and high-quality visual content.",
-    location: "Mumbai, Maharashtra",
-    category: "Lifestyle",
-    website: "www.alexcreates.com",
-
-    // Social Media
-    instagram: "@alexcreates",
-    youtube: "Alex Creates",
-    tiktok: "@alexcreates",
-    twitter: "@alexcreates",
-
-    // Professional Info
-    languages: ["English", "Hindi", "Marathi"],
-    specialties: ["Photography", "Video Editing", "Content Strategy"],
-    equipment: [
-      "DSLR Camera",
-      "Professional Lighting",
-      "Video Editing Software",
-    ],
-
-    // Stats
-    totalFollowers: "285K",
-    avgEngagement: "6.8%",
-    completedCampaigns: 47,
-    totalEarnings: "₹3,85,000",
-    rating: 4.9,
+    name: "Ajay Kumar",
+    bio: "Fashion & Lifestyle Content Creator | Inspiring millions with authentic style",
+    location: "Mumbai, India",
+    email: "ajay@example.com",
+    phone: "+91 9876543210",
+    isPublic: true,
+    profilePhoto: null,
+    coverPhoto: null,
+    socialLinks: {
+      instagram: "https://instagram.com/ajaykumar",
+      youtube: "https://youtube.com/ajaykumar",
+      tiktok: "https://tiktok.com/@ajaykumar",
+      website: "https://ajaykumar.in",
+    },
   });
-
-  const [portfolioItems, setPortfolioItems] = useState([
+  const [platforms, setPlatforms] = useState([
     {
-      id: 1,
-      type: "Instagram Post",
-      title: "Summer Fashion Lookbook",
-      image:
-        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop",
-      engagement: "12.5K likes, 450 comments",
-      brand: "StyleCo",
+      name: "Instagram",
+      handle: "@ajaykumar",
+      followers: "125K",
+      verified: true,
     },
-    {
-      id: 2,
-      type: "YouTube Video",
-      title: "Tech Review: Latest Smartphone",
-      image:
-        "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=400&fit=crop",
-      engagement: "25K views, 890 likes",
-      brand: "TechFlow",
-    },
-    {
-      id: 3,
-      type: "TikTok Video",
-      title: "Fitness Transformation Journey",
-      image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
-      engagement: "50K views, 2.1K likes",
-      brand: "FitLife",
-    },
-    {
-      id: 4,
-      type: "Instagram Reel",
-      title: "Travel Vlog: Goa Adventure",
-      image:
-        "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=400&fit=crop",
-      engagement: "18K views, 750 likes",
-      brand: "TravelWise",
-    },
+    { name: "YouTube", handle: "Ajay Kumar", followers: "89K", verified: true },
+    { name: "TikTok", handle: "@ajaykumar", followers: "67K", verified: false },
   ]);
+  const [languages, setLanguages] = useState(["English", "Hindi", "Marathi"]);
+  const [categories, setCategories] = useState([
+    "Fashion",
+    "Lifestyle",
+    "Travel",
+    "Beauty",
+  ]);
+  const [portfolio, setPortfolio] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const fileInputRef = useRef(null);
+  const coverInputRef = useRef(null);
 
-  const [analytics, setAnalytics] = useState({
-    monthlyStats: [
-      { month: "Jan", followers: 245000, engagement: 6.2 },
-      { month: "Feb", followers: 265000, engagement: 6.5 },
-      { month: "Mar", followers: 285000, engagement: 6.8 },
-    ],
-    demographics: {
-      ageGroups: [
-        { range: "18-24", percentage: 35 },
-        { range: "25-34", percentage: 45 },
-        { range: "35-44", percentage: 20 },
-      ],
-      locations: [
-        { city: "Mumbai", percentage: 25 },
-        { city: "Delhi", percentage: 20 },
-        { city: "Bangalore", percentage: 15 },
-        { city: "Others", percentage: 40 },
-      ],
-    },
-  });
+  // Sample portfolio data
+  useEffect(() => {
+    const samplePortfolio = [
+      {
+        id: 1,
+        type: "image",
+        url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop",
+        platform: "Instagram",
+        views: 125000,
+        likes: 8920,
+        comments: 342,
+        title: "Summer Fashion Haul",
+      },
+      {
+        id: 2,
+        type: "video",
+        url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=600&fit=crop",
+        platform: "YouTube",
+        views: 89000,
+        likes: 6150,
+        comments: 278,
+        title: "Skincare Routine",
+      },
+      {
+        id: 3,
+        type: "image",
+        url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop",
+        platform: "Instagram",
+        views: 67890,
+        likes: 4320,
+        comments: 189,
+        title: "Workout Motivation",
+      },
+      {
+        id: 4,
+        type: "video",
+        url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=600&fit=crop",
+        platform: "TikTok",
+        views: 45210,
+        likes: 3890,
+        comments: 156,
+        title: "Recipe Tutorial",
+      },
+      {
+        id: 5,
+        type: "image",
+        url: "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400&h=600&fit=crop",
+        platform: "Instagram",
+        views: 78340,
+        likes: 5890,
+        comments: 234,
+        title: "Travel Vlog",
+      },
+      {
+        id: 6,
+        type: "video",
+        url: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=600&fit=crop",
+        platform: "YouTube",
+        views: 92150,
+        likes: 7230,
+        comments: 456,
+        title: "Product Review",
+      },
+    ];
+    setPortfolio(samplePortfolio);
+  }, []);
 
-  const handleInputChange = (field, value) => {
-    setProfileData((prev) => ({
+  // Sample testimonials data
+  useEffect(() => {
+    const sampleTestimonials = [
+      {
+        id: 1,
+        brandName: "StyleCo",
+        campaign: "Summer Collection Launch",
+        quote:
+          "Ajay's content perfectly captured our brand aesthetic. The engagement rates exceeded our expectations by 40%!",
+        rating: 5,
+        brandLogo:
+          "https://ui-avatars.com/api/?name=StyleCo&background=7c3aed&color=fff",
+      },
+      {
+        id: 2,
+        brandName: "FitTech",
+        campaign: "App Promotion Campaign",
+        quote:
+          "Professional, creative, and delivers on time. Ajay's authentic approach made our app launch a huge success.",
+        rating: 5,
+        brandLogo:
+          "https://ui-avatars.com/api/?name=FitTech&background=059669&color=fff",
+      },
+      {
+        id: 3,
+        brandName: "GlowBeauty",
+        campaign: "Skincare Product Review",
+        quote:
+          "The 30-day skincare journey content was incredible. Ajay's honesty and detailed reviews built real trust with our audience.",
+        rating: 5,
+        brandLogo:
+          "https://ui-avatars.com/api/?name=GlowBeauty&background=dc2626&color=fff",
+      },
+    ];
+    setTestimonials(sampleTestimonials);
+  }, []);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [testimonials.length]);
+
+  const handlePhotoUpload = (event, type) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileData((prev) => ({
+          ...prev,
+          [type]: e.target.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addPlatform = () => {
+    setPlatforms((prev) => [
       ...prev,
-      [field]: value,
-    }));
+      { name: "", handle: "", followers: "", verified: false },
+    ]);
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    alert("Profile updated successfully!");
+  const updatePlatform = (index, field, value) => {
+    setPlatforms((prev) =>
+      prev.map((platform, i) =>
+        i === index ? { ...platform, [field]: value } : platform,
+      ),
+    );
   };
 
-  const handleAddPortfolioItem = () => {
-    // In a real app, this would open a file upload modal
-    alert("Add portfolio item functionality would open here");
+  const removePlatform = (index) => {
+    setPlatforms((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addLanguage = (language) => {
+    if (language && !languages.includes(language)) {
+      setLanguages((prev) => [...prev, language]);
+    }
+  };
+
+  const removeLanguage = (language) => {
+    setLanguages((prev) => prev.filter((l) => l !== language));
+  };
+
+  const addCategory = (category) => {
+    if (category && !categories.includes(category)) {
+      setCategories((prev) => [...prev, category]);
+    }
+  };
+
+  const removeCategory = (category) => {
+    setCategories((prev) => prev.filter((c) => c !== category));
+  };
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toString();
+  };
+
+  const getPlatformIcon = (platform) => {
+    switch (platform.toLowerCase()) {
+      case "instagram":
+        return "📷";
+      case "youtube":
+        return "📺";
+      case "tiktok":
+        return "🎵";
+      case "facebook":
+        return "📘";
+      case "twitter":
+        return "🐦";
+      default:
+        return "📱";
+    }
+  };
+
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span
+        key={i}
+        className={i < rating ? "text-yellow-400" : "text-gray-600"}
+      >
+        ⭐
+      </span>
+    ));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white pt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              👤 Creator Profile
+            </h1>
+            <p className="text-xl text-gray-400">
+              Manage your profile and showcase your work
+            </p>
+          </div>
 
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Creator Profile
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage your profile and showcase your work
-              </p>
+          <div className="flex items-center space-x-4 mt-6 lg:mt-0">
+            {/* Preview Mode Toggle */}
+            <div className="flex bg-gray-800/50 rounded-xl p-1">
+              <button
+                onClick={() => setPreviewMode("brand")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  previewMode === "brand"
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                Brand View
+              </button>
+              <button
+                onClick={() => setPreviewMode("public")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  previewMode === "public"
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                Public View
+              </button>
             </div>
+
             <button
-              onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
+              onClick={() => setIsEditing(!isEditing)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
             >
               {isEditing ? "Save Changes" : "Edit Profile"}
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Profile Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-              <div className="text-center">
-                <div className="relative mb-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full mx-auto object-cover"
-                  />
-                  {isEditing && (
-                    <button className="absolute bottom-0 right-1/2 transform translate-x-1/2 translate-y-1/2 bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                      📷
-                    </button>
-                  )}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {profileData.name}
-                </h3>
-                <p className="text-purple-600 dark:text-purple-400 font-medium">
-                  {profileData.username}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
-                  {profileData.category} Creator
-                </p>
-              </div>
-
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Followers
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {profileData.totalFollowers}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Engagement
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {profileData.avgEngagement}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Rating
-                  </span>
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">⭐</span>
-                    <span className="font-semibold text-gray-900 dark:text-white ml-1">
-                      {profileData.rating}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Campaigns
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {profileData.completedCampaigns}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Total Earned
-                  </span>
-                  <span className="font-semibold text-green-600">
-                    {profileData.totalEarnings}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
-                Quick Actions
-              </h4>
-              <div className="space-y-3">
-                <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  📊 View Analytics
-                </button>
-                <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  💰 Earnings Report
-                </button>
-                <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  🔗 Share Profile
-                </button>
-                <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  📋 Download Resume
-                </button>
-              </div>
-            </div>
+        {/* Profile Card */}
+        <div className="bg-gradient-to-br from-purple-600/10 to-pink-600/10 backdrop-blur-lg rounded-3xl p-8 border border-purple-400/30 mb-8 relative overflow-hidden">
+          {/* Cover Photo */}
+          <div className="absolute inset-0">
+            {profileData.coverPhoto ? (
+              <img
+                src={profileData.coverPhoto}
+                alt="Cover"
+                className="w-full h-full object-cover opacity-20"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-purple-600/20 to-pink-600/20"></div>
+            )}
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* Tabs */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="flex space-x-8 px-6">
-                  {[
-                    { id: "profile", name: "Profile Info" },
-                    { id: "portfolio", name: "Portfolio" },
-                    { id: "analytics", name: "Analytics" },
-                    { id: "settings", name: "Settings" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                        activeTab === tab.id
-                          ? "border-purple-500 text-purple-600 dark:text-purple-400"
-                          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      }`}
-                    >
-                      {tab.name}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+              {/* Profile Photo */}
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-1">
+                  {profileData.profilePhoto ? (
+                    <img
+                      src={profileData.profilePhoto}
+                      alt={profileData.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center text-4xl font-bold">
+                      {profileData.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </div>
+                  )}
+                </div>
 
-            {/* Tab Content */}
-            {activeTab === "profile" && (
-              <div className="space-y-6">
-                {/* Basic Information */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Basic Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Full Name
-                      </label>
+                {isEditing && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-full transition-colors duration-300"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </button>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handlePhotoUpload(e, "profilePhoto")}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    {isEditing ? (
                       <input
                         type="text"
                         value={profileData.name}
                         onChange={(e) =>
-                          handleInputChange("name", e.target.value)
+                          setProfileData((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
                         }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
+                        className="text-3xl font-bold bg-transparent border-b border-gray-400 text-white focus:outline-none focus:border-purple-400"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.username}
-                        onChange={(e) =>
-                          handleInputChange("username", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) =>
-                          handleInputChange("email", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        value={profileData.phone}
-                        onChange={(e) =>
-                          handleInputChange("phone", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Location
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.location}
-                        onChange={(e) =>
-                          handleInputChange("location", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Category
-                      </label>
-                      <select
-                        value={profileData.category}
-                        onChange={(e) =>
-                          handleInputChange("category", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      >
-                        <option value="Lifestyle">Lifestyle</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Food">Food</option>
-                        <option value="Fitness">Fitness</option>
-                      </select>
+                    ) : (
+                      <h2 className="text-3xl font-bold text-white">
+                        {profileData.name}
+                      </h2>
+                    )}
+                    <div className="flex items-center space-x-3 mt-2">
+                      <span className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 text-yellow-400 px-3 py-1 rounded-xl font-semibold border border-yellow-400/30">
+                        🏆 Gold Creator
+                      </span>
+                      <span className="text-purple-400 font-semibold">
+                        Score: 84/100
+                      </span>
                     </div>
                   </div>
-                  <div className="mt-6">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={profileData.bio}
-                      onChange={(e) => handleInputChange("bio", e.target.value)}
-                      disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                    />
-                  </div>
-                </div>
 
-                {/* Social Media */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Social Media Accounts
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Instagram
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.instagram}
-                        onChange={(e) =>
-                          handleInputChange("instagram", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        YouTube
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.youtube}
-                        onChange={(e) =>
-                          handleInputChange("youtube", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        TikTok
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.tiktok}
-                        onChange={(e) =>
-                          handleInputChange("tiktok", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Twitter
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.twitter}
-                        onChange={(e) =>
-                          handleInputChange("twitter", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-gray-600"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Professional Info */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Professional Information
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Languages
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {profileData.languages.map((lang, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm"
-                          >
-                            {lang}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Specialties
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {profileData.specialties.map((specialty, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Equipment
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {profileData.equipment.map((item, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "portfolio" && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Portfolio
-                  </h3>
-                  <button
-                    onClick={handleAddPortfolioItem}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
-                  >
-                    Add Item
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {portfolioItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all"
+                  {/* Privacy Toggle */}
+                  <div className="flex items-center space-x-3">
+                    <span className="text-gray-400">Private</span>
+                    <button
+                      onClick={() =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          isPublic: !prev.isPublic,
+                        }))
+                      }
+                      className={`relative w-14 h-8 rounded-full transition-colors duration-300 ${
+                        profileData.isPublic ? "bg-green-600" : "bg-gray-600"
+                      }`}
                     >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-                        <button className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 px-4 py-2 rounded-lg transition-all">
-                          View Details
-                        </button>
-                      </div>
-                      <div className="p-4 bg-white dark:bg-gray-800">
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                          {item.title}
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                          {item.type} • {item.brand}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {item.engagement}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                      <div
+                        className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${
+                          profileData.isPublic
+                            ? "translate-x-7"
+                            : "translate-x-1"
+                        }`}
+                      ></div>
+                    </button>
+                    <span className="text-gray-400">Public</span>
+                  </div>
+                </div>
+
+                {isEditing ? (
+                  <textarea
+                    value={profileData.bio}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        bio: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-gray-800/50 border border-gray-700/50 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50 resize-none"
+                    rows="3"
+                    placeholder="Tell brands about yourself..."
+                  />
+                ) : (
+                  <p className="text-gray-300 text-lg mb-4">
+                    {profileData.bio}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-4 text-gray-400">
+                  <span className="flex items-center">
+                    📍 {profileData.location}
+                  </span>
+                  <span className="flex items-center">
+                    📧 {profileData.email}
+                  </span>
+                  <span className="flex items-center">
+                    📱 {profileData.phone}
+                  </span>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
 
-            {activeTab === "analytics" && (
-              <div className="space-y-6">
-                {/* Monthly Growth */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Monthly Growth
-                  </h3>
-                  <div className="grid grid-cols-3 gap-6 mb-6">
-                    {analytics.monthlyStats.map((stat, index) => (
-                      <div key={index} className="text-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
-                          {stat.month} 2024
-                        </div>
-                        <div className="text-2xl font-bold text-purple-600">
-                          {stat.followers.toLocaleString()}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {stat.engagement}% engagement
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+        {/* Editable Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Platforms */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold">📱 Platforms</h3>
+              {isEditing && (
+                <button
+                  onClick={addPlatform}
+                  className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 p-2 rounded-lg transition-colors duration-300"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-                {/* Demographics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Age Demographics
-                    </h3>
-                    <div className="space-y-3">
-                      {analytics.demographics.ageGroups.map((group, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between"
-                        >
-                          <span className="text-gray-600 dark:text-gray-300">
-                            {group.range}
-                          </span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                className="bg-purple-600 h-2 rounded-full"
-                                style={{ width: `${group.percentage}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {group.percentage}%
-                            </span>
-                          </div>
+            <div className="space-y-4">
+              {platforms.map((platform, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xl">
+                      {getPlatformIcon(platform.name)}
+                    </span>
+                    <div>
+                      {isEditing ? (
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            value={platform.name}
+                            onChange={(e) =>
+                              updatePlatform(index, "name", e.target.value)
+                            }
+                            className="bg-gray-800/50 border border-gray-600/50 rounded px-2 py-1 text-white text-sm"
+                            placeholder="Platform name"
+                          />
+                          <input
+                            type="text"
+                            value={platform.handle}
+                            onChange={(e) =>
+                              updatePlatform(index, "handle", e.target.value)
+                            }
+                            className="bg-gray-800/50 border border-gray-600/50 rounded px-2 py-1 text-white text-sm"
+                            placeholder="Handle"
+                          />
                         </div>
-                      ))}
+                      ) : (
+                        <>
+                          <p className="text-white font-medium">
+                            {platform.name}
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            {platform.handle}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Top Locations
-                    </h3>
-                    <div className="space-y-3">
-                      {analytics.demographics.locations.map(
-                        (location, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between"
-                          >
-                            <span className="text-gray-600 dark:text-gray-300">
-                              {location.city}
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div
-                                  className="bg-pink-600 h-2 rounded-full"
-                                  style={{ width: `${location.percentage}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {location.percentage}%
-                              </span>
-                            </div>
-                          </div>
-                        ),
+                  <div className="text-right">
+                    <p className="text-purple-400 font-bold">
+                      {platform.followers}
+                    </p>
+                    <div className="flex items-center space-x-1">
+                      {platform.verified && (
+                        <span className="text-blue-400">✓</span>
+                      )}
+                      {isEditing && (
+                        <button
+                          onClick={() => removePlatform(index)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          ×
+                        </button>
                       )}
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Languages */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50">
+            <h3 className="text-xl font-bold mb-6">🗣️ Languages</h3>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              {languages.map((language) => (
+                <span
+                  key={language}
+                  className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium border border-blue-400/30 flex items-center space-x-2"
+                >
+                  <span>{language}</span>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeLanguage(language)}
+                      className="text-blue-300 hover:text-white"
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+
+            {isEditing && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add language..."
+                  className="flex-1 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400/50"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      addLanguage(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                />
               </div>
             )}
+          </div>
 
-            {activeTab === "settings" && (
-              <div className="space-y-6">
-                {/* Account Settings */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Account Settings
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          Email Notifications
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Receive updates about campaigns and messages
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="w-4 h-4 text-purple-600"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          Profile Visibility
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Allow brands to discover your profile
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="w-4 h-4 text-purple-600"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          Auto-Apply
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Automatically apply to matching campaigns
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-purple-600"
-                      />
-                    </div>
-                  </div>
-                </div>
+          {/* Categories */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50">
+            <h3 className="text-xl font-bold mb-6">🏷️ Categories</h3>
 
-                {/* Danger Zone */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-red-600 mb-4">
-                    Danger Zone
-                  </h3>
-                  <div className="space-y-4">
-                    <button className="w-full md:w-auto px-6 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      Deactivate Account
+            <div className="flex flex-wrap gap-2 mb-4">
+              {categories.map((category) => (
+                <span
+                  key={category}
+                  className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium border border-purple-400/30 flex items-center space-x-2"
+                >
+                  <span>{category}</span>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeCategory(category)}
+                      className="text-purple-300 hover:text-white"
+                    >
+                      ×
                     </button>
-                    <button className="w-full md:w-auto px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-0 md:ml-3">
-                      Delete Account
-                    </button>
-                  </div>
-                </div>
+                  )}
+                </span>
+              ))}
+            </div>
+
+            {isEditing && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add category..."
+                  className="flex-1 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      addCategory(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                />
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      <Footer />
+        {/* Content Portfolio */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 mb-8">
+          <h3 className="text-xl font-bold mb-6">📸 Content Portfolio</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portfolio.map((item) => (
+              <div
+                key={item.id}
+                className="group relative bg-gray-800/50 rounded-xl overflow-hidden hover:transform hover:scale-105 transition-all duration-300"
+              >
+                <div className="aspect-[3/4] relative">
+                  <img
+                    src={item.url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                  {/* Play button for videos */}
+                  {item.type === "video" && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button className="bg-white/20 backdrop-blur-sm rounded-full p-4">
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Platform badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-black/70 text-white px-2 py-1 rounded-lg text-xs font-medium">
+                      {getPlatformIcon(item.platform)} {item.platform}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <h4 className="font-semibold text-white mb-2">
+                    {item.title}
+                  </h4>
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>👁️ {formatNumber(item.views)}</span>
+                    <span>❤️ {formatNumber(item.likes)}</span>
+                    <span>💬 {formatNumber(item.comments)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Testimonials */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold">✨ Brand Testimonials</h3>
+            <button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+              Request Review
+            </button>
+          </div>
+
+          {testimonials.length > 0 && (
+            <div className="relative">
+              <div className="bg-gray-800/30 rounded-xl p-6">
+                <div className="flex items-center space-x-4 mb-4">
+                  <img
+                    src={testimonials[currentTestimonial].brandLogo}
+                    alt={testimonials[currentTestimonial].brandName}
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div>
+                    <h4 className="font-bold text-white">
+                      {testimonials[currentTestimonial].brandName}
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      {testimonials[currentTestimonial].campaign}
+                    </p>
+                  </div>
+                </div>
+
+                <blockquote className="text-gray-300 italic mb-4">
+                  "{testimonials[currentTestimonial].quote}"
+                </blockquote>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex">
+                    {renderStars(testimonials[currentTestimonial].rating)}
+                  </div>
+
+                  <div className="flex space-x-2">
+                    {testimonials.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentTestimonial(index)}
+                        className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                          index === currentTestimonial
+                            ? "bg-purple-400"
+                            : "bg-gray-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
